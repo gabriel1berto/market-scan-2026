@@ -81,6 +81,23 @@ pip install -r requirements.txt
 python extract_pncp.py
 ```
 
+## Rodando extração no GitHub Actions
+
+Extração de meses além de jan/2026 (fev-jun/2026, "primeiro semestre") roda via
+`.github/workflows/extract.yml` em vez de local — é I/O-bound (rate limit da API do PNCP),
+não compete por recurso com o resto do trabalho na máquina local.
+
+**Setup único** (depois do repo criado e código no GitHub):
+1. Repo → Settings → Secrets and variables → Actions → New repository secret.
+2. Nome `DATABASE_URL`, valor igual ao do `.env` local (connection string do Supabase).
+
+**Rodar**: Actions → "Extração PNCP" → Run workflow. Inputs:
+- `uf` (default `RJ`)
+- `meses` — subset de `02,03,04,05,06` separado por vírgula (default: todos os 5)
+
+Trigger é sempre manual (`workflow_dispatch`) — nunca roda sozinho em cron/push. Cada mês é um
+job de matrix independente (resumível via `ja_processada()`, então re-rodar não duplica).
+
 ## Resultado do piloto
 
 **Rodada 25/jul/2026** (RJ, 01/01/2026-31/01/2026, 2.715 contratações inspecionadas):

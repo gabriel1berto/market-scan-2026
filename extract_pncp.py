@@ -12,10 +12,15 @@ inspirado em analise/coletor_pncp.py e coletor_pncp_detalhe.py do licit, mas
 escrito do zero aqui, sem import nem dependência de runtime daquele repo.
 
 Uso:
-    python extract_pncp.py                # roda o piloto completo (UF=RJ, default)
-    python extract_pncp.py --uf SP         # roda pra outra UF
-    python extract_pncp.py --limite 20     # só as 20 primeiras contratações (teste)
-    python extract_pncp.py --status        # conta linhas já gravadas em itens_pncp
+    python extract_pncp.py                                  # RJ, jan/2026 (default)
+    python extract_pncp.py --uf SP                           # roda pra outra UF
+    python extract_pncp.py --data-inicial 20260201 --data-final 20260228  # fev/2026
+    python extract_pncp.py --limite 20                      # só as 20 primeiras (teste)
+    python extract_pncp.py --status                         # conta linhas já gravadas
+
+Extração de meses além de jan/2026 roda via GitHub Actions (.github/workflows/extract.yml,
+trigger manual) pra não competir com o resto do trabalho local — ver README "Rodando extração
+no GitHub Actions".
 """
 
 import argparse
@@ -32,10 +37,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── Configuração — escopo fixado no README, UF parametrizável via --uf ────
+# ── Configuração — escopo fixado no README, UF/data parametrizáveis via CLI ─
 
-DATA_INICIAL = "20260101"
-DATA_FINAL = "20260131"
+DATA_INICIAL_PADRAO = "20260101"
+DATA_FINAL_PADRAO = "20260131"
 MODALIDADES = list(range(1, 15))  # 1-14 — todas testadas válidas p/ RJ/jan-2026, não existe "todas" no endpoint
 TAM_PAGINA = 50  # máximo aceito pela API
 
@@ -97,14 +102,14 @@ def chamar_api(url: str, params: dict | None = None):
 
 # ── Fase 1: busca de contratações publicadas (14 modalidades × páginas) ──
 
-def buscar_contratacoes(uf: str) -> list[dict]:
+def buscar_contratacoes(uf: str, data_inicial: str, data_final: str) -> list[dict]:
     encontradas = []
     for modalidade in MODALIDADES:
         pagina = 1
         while True:
             params = {
-                "dataInicial": DATA_INICIAL,
-                "dataFinal": DATA_FINAL,
+                "dataInicial": data_inicial,
+                "dataFinal": data_final,
                 "codigoModalidadeContratacao": modalidade,
                 "uf": uf,
                 "pagina": pagina,
@@ -134,7 +139,7 @@ def buscar_contratacoes(uf: str) -> list[dict]:
             pagina += 1
             time.sleep(PAUSA_ENTRE_PAGINAS)
 
-    log.info(f"Fase 1 concluída: {len(encontradas)} contratações encontradas em {uf}, {DATA_INICIAL}-{DATA_FINAL}.")
+    log.info(f"Fase 1 concluída: {len(encontradas)} contratações encontradas em {uf}, {data_inicial}-{data_final}.")
     return encontradas
 
 
@@ -218,7 +223,7 @@ def processar_contratacao(con: psycopg2.extensions.connection, cur: psycopg2.ext
 
 # ── Orquestração ──────────────────────────────────────────────────────────
 
-def rodar_piloto(uf: str, limite: int | None) -> None:
+def rodar_piloto(uf: str, limite: int | None, data_inicial: str, data_final: str) -> None:
     con, cur = conectar_db()
 
     cur.execute("SELECT COUNT(*) FROM itens_pncp WHERE uf = %s", (uf,))
@@ -231,7 +236,7 @@ def rodar_piloto(uf: str, limite: int | None) -> None:
         )
 
     inicio = time.time()
-    contratacoes = buscar_contratacoes(uf)
+    contratacoes = buscar_contratacoes(uf, data_inicial, data_final)
     if limite:
         contratacoes = contratacoes[:limite]
         log.info(f"--limite {limite}: processando só as {len(contratacoes)} primeiras contratações.")
@@ -278,9 +283,11 @@ if __name__ == "__main__":
     parser.add_argument("--status", action="store_true", help="só mostra contagem já gravada, não roda")
     parser.add_argument("--uf", type=str, default="RJ", help="UF a extrair (default RJ)")
     parser.add_argument("--limite", type=int, default=None, help="processa só as N primeiras contratações (teste)")
+    parser.add_argument("--data-inicial", type=str, default=DATA_INICIAL_PADRAO, help="AAAAMMDD (default jan/2026)")
+    parser.add_argument("--data-final", type=str, default=DATA_FINAL_PADRAO, help="AAAAMMDD (default jan/2026)")
     args = parser.parse_args()
 
     if args.status:
         mostrar_status()
     else:
-        rodar_piloto(args.uf.upper(), args.limite)
+        rodar_piloto(args.uf.upper(), args.limite, args.data_inicial, args.data_final)

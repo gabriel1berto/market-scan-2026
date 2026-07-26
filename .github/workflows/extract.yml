@@ -1,0 +1,52 @@
+name: Extração PNCP
+
+on:
+  workflow_dispatch:
+    inputs:
+      uf:
+        description: "UF a extrair"
+        required: false
+        default: "RJ"
+      meses:
+        description: "Meses de 2026 a rodar (subset de 02,03,04,05,06), separados por vírgula"
+        required: false
+        default: "02,03,04,05,06"
+
+jobs:
+  extrair:
+    strategy:
+      fail-fast: false
+      matrix:
+        mes:
+          - { numero: "02", inicio: "20260201", fim: "20260228" }
+          - { numero: "03", inicio: "20260301", fim: "20260331" }
+          - { numero: "04", inicio: "20260401", fim: "20260430" }
+          - { numero: "05", inicio: "20260501", fim: "20260531" }
+          - { numero: "06", inicio: "20260601", fim: "20260630" }
+    if: contains(github.event.inputs.meses, matrix.mes.numero)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Extrair ${{ github.event.inputs.uf }} ${{ matrix.mes.inicio }}-${{ matrix.mes.fim }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python extract_pncp.py \
+            --uf "${{ github.event.inputs.uf }}" \
+            --data-inicial "${{ matrix.mes.inicio }}" \
+            --data-final "${{ matrix.mes.fim }}"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extract-log-${{ github.event.inputs.uf }}-${{ matrix.mes.numero }}
+          path: extract_pncp.log
