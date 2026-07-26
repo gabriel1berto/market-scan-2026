@@ -13,17 +13,35 @@ on:
         default: "02,03,04,05,06"
 
 jobs:
+  montar-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.filtro.outputs.matrix }}
+    steps:
+      - id: filtro
+        run: |
+          python3 - <<'PY'
+          import json, os
+
+          todos = [
+              {"numero": "02", "inicio": "20260201", "fim": "20260228"},
+              {"numero": "03", "inicio": "20260301", "fim": "20260331"},
+              {"numero": "04", "inicio": "20260401", "fim": "20260430"},
+              {"numero": "05", "inicio": "20260501", "fim": "20260531"},
+              {"numero": "06", "inicio": "20260601", "fim": "20260630"},
+          ]
+          pedidos = {m.strip() for m in "${{ github.event.inputs.meses }}".split(",") if m.strip()}
+          selecionados = [m for m in todos if m["numero"] in pedidos]
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"matrix={json.dumps({'mes': selecionados})}\n")
+          PY
+
   extrair:
+    needs: montar-matrix
     strategy:
       fail-fast: false
-      matrix:
-        mes:
-          - { numero: "02", inicio: "20260201", fim: "20260228" }
-          - { numero: "03", inicio: "20260301", fim: "20260331" }
-          - { numero: "04", inicio: "20260401", fim: "20260430" }
-          - { numero: "05", inicio: "20260501", fim: "20260531" }
-          - { numero: "06", inicio: "20260601", fim: "20260630" }
-    if: contains(github.event.inputs.meses, matrix.mes.numero)
+      matrix: ${{ fromJson(needs.montar-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:
