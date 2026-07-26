@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+raw_cache/
+*.log
+.venv/
+clusters_resumo.json
