@@ -8,9 +8,9 @@ on:
         required: false
         default: "RJ"
       meses:
-        description: "Meses de 2026 a rodar (subset de 02,03,04,05,06), separados por vírgula"
+        description: "Meses de 2026 a rodar (subset de 01,02,03,04,05,06), separados por vírgula"
         required: false
-        default: "02,03,04,05,06"
+        default: "01,02,03,04,05,06"
 
 jobs:
   montar-matrix:
@@ -24,6 +24,7 @@ jobs:
           import json, os
 
           todos = [
+              {"numero": "01", "inicio": "20260101", "fim": "20260131"},
               {"numero": "02", "inicio": "20260201", "fim": "20260228"},
               {"numero": "03", "inicio": "20260301", "fim": "20260331"},
               {"numero": "04", "inicio": "20260401", "fim": "20260430"},
