@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       uf:
-        description: "UF a extrair"
+        description: "UF(s) a extrair, separadas por vírgula (padrão: as 26 UFs restantes — RJ já completo)"
         required: false
-        default: "RJ"
+        default: "AC,AL,AP,AM,BA,CE,DF,ES,GO,MA,MT,MS,MG,PA,PB,PR,PE,PI,RN,RS,RO,RR,SC,SP,SE,TO"
       meses:
         description: "Meses de 2026 a rodar (subset de 01,02,03,04,05,06), separados por vírgula"
         required: false
@@ -23,7 +23,7 @@ jobs:
           python3 - <<'PY'
           import json, os
 
-          todos = [
+          meses_todos = [
               {"numero": "01", "inicio": "20260101", "fim": "20260131"},
               {"numero": "02", "inicio": "20260201", "fim": "20260228"},
               {"numero": "03", "inicio": "20260301", "fim": "20260331"},
@@ -31,17 +31,28 @@ jobs:
               {"numero": "05", "inicio": "20260501", "fim": "20260531"},
               {"numero": "06", "inicio": "20260601", "fim": "20260630"},
           ]
-          pedidos = {m.strip() for m in "${{ github.event.inputs.meses }}".split(",") if m.strip()}
-          selecionados = [m for m in todos if m["numero"] in pedidos]
+          ufs = [u.strip() for u in "${{ github.event.inputs.uf }}".split(",") if u.strip()]
+          meses_pedidos = {m.strip() for m in "${{ github.event.inputs.meses }}".split(",") if m.strip()}
+          meses_sel = [m for m in meses_todos if m["numero"] in meses_pedidos]
+
+          # combinação UF x mês — cada uma vira 1 job da matrix. 26 UFs x 6 meses = 156,
+          # dentro do teto de 256 combinações que o GitHub Actions aceita numa matrix só.
+          combos = [{"uf": uf, "mes": mes} for uf in ufs for mes in meses_sel]
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"matrix={json.dumps({'mes': selecionados})}\n")
+              f.write(f"matrix={json.dumps({'combo': combos})}\n")
           PY
 
   extrair:
     needs: montar-matrix
     strategy:
       fail-fast: false
+      # achado 28/jul/2026: 26 UFs x 6 meses gerado numa matrix só precisa de teto de
+      # paralelismo — rodar tudo de uma vez sobrecarregaria a API do PNCP (mesmo motivo
+      # pelo qual rodar_resto_brasil.py evitava paralelizar por UF). 6 é o mesmo nível
+      # de concorrência já testado com sucesso (matrix de 6 meses de uma UF só rodou
+      # sem problema em sessão anterior).
+      max-parallel: 6
       matrix: ${{ fromJson(needs.montar-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -54,18 +65,18 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Extrair ${{ github.event.inputs.uf }} ${{ matrix.mes.inicio }}-${{ matrix.mes.fim }}
+      - name: Extrair ${{ matrix.combo.uf }} ${{ matrix.combo.mes.inicio }}-${{ matrix.combo.mes.fim }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python extract_pncp.py \
-            --uf "${{ github.event.inputs.uf }}" \
-            --data-inicial "${{ matrix.mes.inicio }}" \
-            --data-final "${{ matrix.mes.fim }}"
+            --uf "${{ matrix.combo.uf }}" \
+            --data-inicial "${{ matrix.combo.mes.inicio }}" \
+            --data-final "${{ matrix.combo.mes.fim }}"
 
       - name: Upload log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: extract-log-${{ github.event.inputs.uf }}-${{ matrix.mes.numero }}
+          name: extract-log-${{ matrix.combo.uf }}-${{ matrix.combo.mes.numero }}
           path: extract_pncp.log
