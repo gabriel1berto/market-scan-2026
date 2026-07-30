@@ -1187,3 +1187,71 @@ Frota Municipal/Peças e Acessórios de Veículos têm nicho_especifico com flag
 "descrição conflitante" — campo estruturado do PNCP cita um veículo (ex:
 Toyota Etios), texto livre cita outro (ex: VW Virtus). Bug de dado na fonte
 PNCP, não erro de classificação.
+
+## Escala nacional (30/jul/2026) — classificação manual não escala mais
+
+Extração ampliada de RJ-só pra nacional (27 UF x 6 meses, ver workflow
+`extract.yml`) fez `itens_pncp` saltar de 44.699 pra 320k+ em poucas horas.
+`gabarito_nicho` (classificação manual item a item) parou em 5.856 — a
+100% dos itens de jan/RJ, mas **1,8%** do total agora. Dupla passada manual a
+25 itens/lote não é viável em 316k+ não-classificados (~12.600 lotes).
+
+**Decisão:** aposentar objetivo de classificar 100% em `gabarito_nicho`.
+Passar a rodar direto a query de agregação estrutural (seção 4 da skill
+`niche-opportunity-finder`) sobre `itens_pncp` inteira, sem depender de
+classificação prévia.
+
+**Teste de `pg_trgm` (fuzzy match) — resultado negativo.** Tentei usar
+`similarity()` pra agrupar variantes de "aparelho ar condicionado" (621
+itens) que o match exato desc_norm deixa de fora. Achado: palavra comum do
+português ("acondicionado" = embalado) compartilha trigram com "condicionado"
+(ar-condicionado) — contaminou o resultado com carne/alho/água mineral
+embalados, ruído puro. E os variantes reais de "ar condicionado" que
+apareceram (serviço de manutenção/instalação) tiveram similarity MAIOR que
+peça real ("filtro de ar condicionado"), então nem separaria produto de
+serviço direito. **Conclusão: fuzzy genérico na base toda não compensa** —
+extensão `pg_trgm` ficou habilitada no Supabase mas não virou pipeline
+padrão. Abordagem recomendada: dicionário de sinônimo curado à mão por
+candidato promissor, igual ao filtro do LICIT-pneu, não fuzzy automático.
+
+### Método de triagem em 4 camadas (aplicado no top ~20 por volume nacional)
+
+1. **Regra estrutural determinística** (regex excluindo manutenção/locação/
+   obra/engenharia/software/etc.) — rápido, mas **gera falso negativo**:
+   "controle de abastecimento de veículos" e "secretária" passaram como
+   produto na regex.
+2. **`objetoCompra` (nível contratação)** — pegou os 2 falsos negativos:
+   "controle de abastecimento de veículos" é na verdade "prestação de
+   serviços contínuos" (staffing terceirizado); "secretária" é cargo de
+   apoio administrativo terceirizado, não móvel.
+3. **Frequência nacional** (`count(distinct órgão)`, UFs, meses) —
+   separa candidato genuinamente recorrente de concentração regional
+   disfarçada de volume: "equipamento laboratório" só tem 4 órgãos/4 UFs
+   apesar de aparecer no top 20 por valor — sinal fraco.
+4. **Amostra de 3 linhas por candidato** (não auditoria exaustiva) —
+   confirmou concentração: "equipamento laboratório" teve o MESMO CNPJ
+   vencedor nas 3 maiores ocorrências (incumbente total); "conjunto escolar"
+   teve 2 de 3 do mesmo CNPJ (parcial, precisa linha crua completa antes de
+   promover).
+
+**Traps confirmados** (não promover): controle de abastecimento de
+veículos (R$240mi, é serviço), secretária (R$88,6mi, é serviço/staffing),
+equipamento laboratório (R$83,9mi, incumbente único), óleo diesel e
+gasolina comum (trap já conhecido — concentração regional disfarçada,
+ver seção "erro central" da skill).
+
+**Candidatos fortes sobreviventes** (produto real, confirmado por objeto,
+frequência nacional boa, sem concentração óbvia na amostra):
+
+| Candidato | Itens | Órgãos/UFs/meses | Fornecedores | Valor total |
+|---|---|---|---|---|
+| Aparelho ar condicionado | 621 | 77/16/6 | 135 (22%) | R$172,5mi |
+| Switch | 81 | 38/16/6 | 44 (54%) | R$87,8mi |
+| Microcomputador | 62 | 37/13/6 | 44 (71%) | R$85,8mi |
+| Automóvel | 50 | 39/12/6 | 38 (76%) | R$1,58bi (ticket alto, capital-intensivo) |
+| Carne bovina in natura | 221 | 32/15/6 | 74 (33%) | R$203,8mi (perecível, logística nova) |
+
+**Watch, não decidido:** conjunto escolar (mobiliário escolar, R$326mi, 42
+itens) — objeto confirma produto real, mas frequência fraca (13 órgãos/7
+UFs) e concentração parcial na amostra. Não promover sem linha crua completa
+(query seção 3 da skill).
