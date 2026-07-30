@@ -1335,3 +1335,33 @@ transporte, treinamento, etc.), não itens raros.
 **Não corrigido ainda** — só medido e documentado. Corrigir exige decisão
 por grupo (qual categoria fica), não é mecânico como a normalização do
 cluster automotivo (seção acima).
+
+**H6 — correção automática por maioria simples, testado:** dos 111 grupos
+inconsistentes, só **51 (46%) têm maioria clara (≥66% dos itens numa única
+categoria)** — resolvível mecanicamente sem julgamento humano. Os outros
+**60 (54%) são empate real** (ex: 2 categorias com metade dos itens cada),
+não dá pra resolver só contando — precisa de sinal adicional (objetoCompra
+da contratação) ou decisão manual. Correção automática por maioria cobre
+menos da metade do problema; não é solução completa sozinha.
+
+## Síntese da sessão de 30min (30/jul/2026) — hipóteses testadas
+
+Testei 4 hipóteses sobre como melhorar a classificação, todas com medição
+real (não smell-test), documentadas acima em detalhe:
+
+1. **Regex servico/produto** — validado contra `gabarito_nicho`, iterado
+   4x, F1 0,62→0,79. 2 keywords removidas por causarem falso-positivo
+   sistemático (mesma classe de erro que o `pg_trgm` já tinha revelado:
+   palavra comum do português conflita com termo técnico).
+2. **Proxy `length<60`** — correlação fraca (13pp), confirmado como
+   direcional, não decisivo.
+3. **Deriva de taxonomia entre lotes** — 9,4% dos itens classificados
+   (553/5.856) em grupo que caiu em categoria diferente em lotes
+   diferentes. 2 causas: sinônimo de nome (fácil corrigir) e discordância
+   real de julgamento (grave, ex: fralda descartável foi parar em
+   "Outros").
+4. **Correção automática por maioria** — resolve só 46% dos grupos
+   inconsistentes; resto precisa de sinal extra ou decisão humana.
+
+**Nada foi aplicado em produção** (nenhum UPDATE em `gabarito_nicho`) — só
+testado, medido e documentado. Toda decisão de aplicar fica com o usuário.
