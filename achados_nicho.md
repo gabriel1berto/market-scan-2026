@@ -1365,3 +1365,23 @@ real (não smell-test), documentadas acima em detalhe:
 
 **Nada foi aplicado em produção** (nenhum UPDATE em `gabarito_nicho`) — só
 testado, medido e documentado. Toda decisão de aplicar fica com o usuário.
+
+## Aplicação em produção (30/jul/2026) — correção de drift por maioria
+
+Usuário aprovou aplicar os itens 2, 3, 4 da lista de próximos passos. Item 3
+executado: UPDATE em `gabarito_nicho` canonicalizando `categoria_ampla` pros
+grupos com maioria clara (≥66%).
+
+**Ajuste feito no dry-run antes de aplicar:** vários casos a "maioria" era
+`Outros` ou `Indefinido/Não Classificável` (ex: "água sanitária" tinha
+categoria específica numa passada, "Outros" genérico na outra — maioria
+escolheria "Outros", que é regressão, não correção). **Excluí esses do
+auto-apply** — não é seguro assumir que o bucket genérico "vence" só por
+aparecer mais vezes; isso normalmente significa que NENHUMA das passadas
+resolveu o item direito.
+
+**Resultado:** 71 linhas corrigidas (de 78 candidatas, 7 excluídas pela
+regra acima). Drift caiu de **111 grupos/553 itens → 66 grupos/224 itens**
+(59% de redução nos itens afetados). Os 66 grupos restantes são empate
+genuíno (sem maioria ≥66%) — precisam de `objetoCompra` ou decisão manual,
+não são mecânicos.
