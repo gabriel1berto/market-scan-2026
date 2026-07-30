@@ -1306,3 +1306,32 @@ confiança real.
 `gabarito_nicho` — ficou só testado e documentado. Aplicar em produção
 (reclassificar os 26% de FN restantes, ou usar como filtro nos 320k+ itens
 novos) é decisão em aberto do usuário.
+
+## H5 — deriva de taxonomia entre lotes (30/jul/2026)
+
+Teste de auto-consistência: mesmo `desc_norm` (descrição idêntica) caindo em
+`categoria_ampla` diferente em lotes diferentes (234 lotes ao longo de
+semanas, taxonomia cresceu organicamente sem canon central).
+
+**Escala medida:** 111 de 3.848 grupos distintos (2,9%) são inconsistentes,
+mas afetam **553 de 5.856 itens (9,4%)** — desproporcional porque os grupos
+inconsistentes tendem a ser os mais recorrentes (energia elétrica, vale
+transporte, treinamento, etc.), não itens raros.
+
+**2 tipos de problema misturados, gravidade diferente:**
+1. **Sinônimo de categoria** (mesmo conceito, nome diferente por lote) —
+   maioria dos casos: "Serviços/Concessionárias (Água/Luz)" vs "Serviços/
+   Utilidades Públicas - Energia" (energia elétrica, 68 itens somados em 3
+   grupos), "Serviços Gráficos/Impressão" vs "Serviços/Gráficos e
+   Encadernação", "Serviços/Bancários e Financeiros" vs "Serviços
+   Financeiros/Convênio Bancário". Fácil de corrigir — canonicalizar nome,
+   sem mudar julgamento.
+2. **Discordância real de julgamento** (mais grave) — "fralda descartável"
+   (14 itens) caiu em `Outros` numa passada e `Saúde/Hospitalar` (correto)
+   noutra; "álcool etílico" (14 itens) se espalhou em 3 categorias
+   (`Outros`, `Produtos de Limpeza e Higienização`, `Saúde/Hospitalar`).
+   Esses exigem decisão de qual categoria é a certa, não só rename.
+
+**Não corrigido ainda** — só medido e documentado. Corrigir exige decisão
+por grupo (qual categoria fica), não é mecânico como a normalização do
+cluster automotivo (seção acima).
