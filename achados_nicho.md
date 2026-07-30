@@ -1255,3 +1255,54 @@ frequência nacional boa, sem concentração óbvia na amostra):
 itens) — objeto confirma produto real, mas frequência fraca (13 órgãos/7
 UFs) e concentração parcial na amostra. Não promover sem linha crua completa
 (query seção 3 da skill).
+
+## Validação empírica da regra de triagem — regex servico vs `revendavel` (30/jul/2026)
+
+Primeira medição real (não smell-test) da regra estrutural que separa produto
+de serviço: comparei o regex contra os 5.856 itens já classificados em
+`gabarito_nicho` (campo `revendavel` como proxy de verdade — ainda não é
+validação humana externa, é auto-consistência, mas é o primeiro número
+concreto que já tivemos).
+
+**Matriz de confusão, iterado em 4 rodadas:**
+
+| Versão | Recall | Precisão | F1 | Mudança |
+|---|---|---|---|---|
+| v1 (regex original, seção "escala nacional") | 50,1% | 81,3% | 0,62 | baseline |
+| v2 | 71,0% | 81,0% | 0,76 | +14 termos achados em amostra de FN: pagamento, patrocín, energia elétrica, vale transport, custas, consignaç, afretamento, buffet, palestra, oficina, treinamento, apresentaç, laudo, pericia, elaboração de arte |
+| v3 | 74,9% | 81,5% | 0,78 | +8 termos: exame, inscri, diária, condomínio, veiculaç, certificado digital, esgoto (todos testados FP antes de adicionar, precisão ≥85% isolado) |
+| **v4 (final)** | **73,5%** | **85,7%** | **0,79** | -2 termos removidos: `conserva` (15 não/33 sim — bate em "CONSERVACAO: CONGELADA/FRESCO" de carne, mesma armadilha do teste pg_trgm) e `impress` (51 não/88 sim, 37% precisão — bate em "impressora"/"papel para impressão" como produto, não serviço de outsourcing) |
+
+**Regex v4 final:**
+```
+manuten|locac|locaç|prestaç|prestac|instalaç|instalac|reform|obra|limpeza|
+vigilanc|vigilân|consultori|apoio adm|terceiriz|desenvolv|softwar|licenc|
+assinatura|hospedagem|seguro|pavimenta|rodovi|engenh|servi[cç]|edifica|
+pagamento|patrocin|patrocín|energia elétrica|energia eletrica|vale transport|
+custas|consignaç|consignac|afretamento|buffet|palestra|oficina|treinamento|
+apresentaç|apresentac|laudo|pericia|perícia|elaboração de arte|
+elaboracao de arte|\yexame|inscri|di[áa]ria|condom[íi]nio|veiculaç|veiculac|
+certificado digital|esgoto
+```
+
+**Testado e rejeitado:** `confec` (confecção) é 52 não/50 sim — ambíguo
+estrutural de verdade (manufatura sob encomenda vs produto de linha), não dá
+pra resolver com keyword, precisa de contexto adicional (objetoCompra ou
+quantidade/padronização).
+
+**H2 testado:** proxy `length(descricao_item)<60` (usado na query de
+agregação estrutural) correlaciona fraco com produto real — 66,3% produto
+quando curta vs 53,2% quando longa (13pp de diferença). Não é filtro forte
+sozinho, mas não tinha pretensão de ser — é só um proxy de "item padronizado
+vs boilerplate de edital", validado como direcional, não decisivo.
+
+**Limitação que continua de pé:** essa validação usa `revendavel` (minha
+própria classificação anterior) como verdade — mede se o regex é consistente
+comigo, não se estou certo. Validação humana externa (amostra
+`amostra_validacao_100.csv`) continua pendente e é o próximo nível de
+confiança real.
+
+**Não aplicado ainda:** regex v4 não foi usado pra reclassificar/sobrescrever
+`gabarito_nicho` — ficou só testado e documentado. Aplicar em produção
+(reclassificar os 26% de FN restantes, ou usar como filtro nos 320k+ itens
+novos) é decisão em aberto do usuário.
