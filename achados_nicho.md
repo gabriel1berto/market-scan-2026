@@ -1385,3 +1385,46 @@ regra acima). Drift caiu de **111 grupos/553 itens → 66 grupos/224 itens**
 (59% de redução nos itens afetados). Os 66 grupos restantes são empate
 genuíno (sem maioria ≥66%) — precisam de `objetoCompra` ou decisão manual,
 não são mecânicos.
+
+## Item 2 — regex v4 rodado na base atual (344k+, 30/jul/2026)
+
+Reconfirma os 5 candidatos fortes com dado mais recente (base cresceu desde
+a última leva): ar condicionado 621→651 itens, switch 81→86, microcomputador
+62→70, automóvel 50→51, carne bovina 221→238 — crescimento proporcional ao
+tamanho da base, sem sinal de anomalia.
+
+**Trap novo achado:** `teleatendimento` (9 itens, R$67,6mi, só 2
+fornecedores) — serviço disfarçado, mesmo padrão dos outros traps de
+concentração total.
+
+## Item 4 — filtro curado (Estágio C), piloto com ar condicionado
+
+Testei expandir de match exato (`desc_norm` = "aparelho ar condicionado",
+651 itens) pra keyword amplo (`ar condicionado|climatiza`, excluindo
+serviço): **2.687 itens, R$500mi** — ganho de recall de 4,1x. Mas isso sem
+verificação é perigoso: amostra revelou **17,7% de ruído (477/2.692)** em 2
+padrões novos que a exclusão de serviço não pega:
+
+1. **Acessório/peça contaminando** — "Filtro Ar Condicionado", "Fonte
+   Alimentação... aplicação desktop", "Memória Ram... microcomputadores":
+   o item é peça/componente, não o produto principal.
+2. **Keyword como característica, não o produto comprado** — "Veículo tipo
+   caminhonete... ar condicionado" é a compra de um VEÍCULO que tem AC como
+   especificação, não a compra de um aparelho de ar condicionado.
+3. **Serviço que a exclusão original não pegava**: "Higienização - Ar
+   Condicionado" (adicionei `higieniz` à lista de exclusão).
+
+**Filtro final, limpo:** excluindo início de descrição com `filtro|fonte|
+peça|kit filtro` e presença de `veículo|caminhonete|caminhão|ônibus|
+automóvel` (indicando que o item comprado é outra coisa) → **2.222 itens,
+R$338,3mi** — ainda 3,4x mais itens e 1,9x mais valor que o match exato,
+com o ruído removido.
+
+**Lição pro Estágio C completo:** expandir recall via keyword é fácil, mas
+cada candidato precisa da mesma auditoria de amostra antes de confiar —
+"ganho de recall" sozinho não é sinal de sucesso, pode ser sinal de estar
+capturando lixo. Os outros 4 candidatos (switch, microcomputador, automóvel,
+carne bovina) precisam do mesmo tratamento antes de considerar o filtro
+pronto — não feito ainda nesta sessão por tempo, mas o padrão acima
+(keyword amplo → checar amostra → identificar categoria de ruído →
+excluir → medir de novo) é o método replicável.
