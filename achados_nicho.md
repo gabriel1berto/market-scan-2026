@@ -1968,6 +1968,66 @@ ambiguidade real da língua):**
    corrigido nesta rodada: 96,7% numa amostra de 30 escondia um bug que
    afetava 17% da população real.
 
+## Passagem completa por todas as ~20 categorias (31/jul/2026)
+
+Usuário pediu ir até o fim — população completa (não amostra) em todas as
+categorias restantes. Resultado final: **10 bugs reais confirmados**,
+todos a mesma classe de erro (substring solto ou palavra polissêmica
+entre domínios), nenhum bug de conceito novo além do que o método já
+previa.
+
+**Categorias 100% limpas na varredura completa:** Implantável (23/23),
+Alimentação/Mercearia, Educação, EPI, Limpeza, Agro, Fitness, Armamento.
+
+**Bugs adicionais achados (mesma classe já documentada):**
+7. `g[áa]s` sem borda de palavra — bate em "carGAS", "gasOSA" (refrigerante/
+   água com gás), "gasoterapia" (terapia médica de oxigênio, ~31 itens),
+   "praGAS". Mesmo padrão do `cimento`.
+8. `câmera videoconferência` (21 itens) — equipamento de reunião/TI, não
+   câmera de segurança. Mesmo padrão do `mesa áudio/vídeo`.
+9. `compressor de ar odontológico` (20 itens) — equipamento dentário, não
+   industrial. Mesmo padrão do `cimento odontológico`.
+10. `ração peixe` (24 itens) — ração animal (Agro), não peixe alimentício
+    (Perecível) — ordem de checagem no CASE WHEN erra a prioridade.
+
+**Achados de cobertura (não é classificação errada, é ausência de regra):**
+- `sondagens terrestres` escapa da exclusão de serviço porque eu só tinha
+  "sondagem" singular, não "sondagens" plural — bug de regex simples.
+- `luva de proteção/segurança/borracha` (89 itens) não tem categoria —
+  minha regra de Hospitalar exige contexto de saúde, e EPI não previa
+  "luva" — buraco de cobertura entre 2 categorias vizinhas.
+- `endoscopia`/`ultrassonografias` (exame, serviço) vs `endoscópio`/
+  `aparelho ultrassonografia` (equipamento, produto) — minha regex usa a
+  mesma raiz pros dois, não distingue procedimento médico de aparelho.
+
+## Resumo final do método (pedido do usuário)
+
+**7 regras pra evitar essa classe de erro em qualquer classificação por
+regex, não só nesse projeto:**
+
+1. Sufixo sempre com âncora de fim de palavra (`$` ou `\M` no Postgres) —
+   nunca `\S+ina` sem fechamento, sempre `\S+ina$`.
+2. Sufixo curto (2-4 letras) é arriscado mesmo com âncora — português
+   tem demais palavra comum terminando igual. Prefira sufixo composto
+   específico (`cloridrato`, `mesilato`) a sufixo genérico (`-ina`, `-ol`).
+3. Toda palavra-base curta usada como critério (`gás`, `cimento`, `mesa`,
+   `câmera`, `compressor`) precisa de teste de borda de palavra (`\y`) —
+   sem isso, vira substring solto que aparece dentro de outra palavra.
+4. Mesma palavra pode ter sentido técnico diferente por domínio — isso
+   não é bug de regex, é ambiguidade real da língua técnica. Usar o
+   MODIFICADOR (odontológico/ortopédico/áudio/vídeo/videoconferência)
+   como sinal de domínio, nunca a palavra-base sozinha pra decidir.
+5. Rede de sinônimo tem que ser deliberadamente completa — não confiar
+   em 1 palavra por conceito ("aluguel"/"locação", "compra"/"aquisição",
+   singular/plural de termo de exclusão).
+6. Categoria vizinha precisa cobrir a variação real de wording da fonte,
+   não só o termo mais comum — buraco entre 2 categorias (`luva` entre
+   Hospitalar e EPI) é tão real quanto contaminação.
+7. Amostra pequena mede precisão aparente, não real. Rodar população
+   completa do grupo (`GROUP BY`, barato) sempre que possível antes de
+   declarar uma regra "confiável" — foi assim que se achou 9 dos 10
+   bugs reais desta auditoria.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
