@@ -1678,6 +1678,26 @@ dos campos catálogo/NCM vazios em 99,76% dos itens, já documentado antes).
 usuário. Resíduo real (~8,2%, R$809mi) é cauda longa genuína — muitos
 grupos pequenos e diversos, não vale mais rodada de regex por ora.
 
+## Item 3 — Auditoria funda do pilar Saúde (30/jul/2026)
+
+**Bug real achado na auditoria:** ordem do CASE WHEN causava erro — regex
+de sufixo farmacêutico (`$ina`, `$ol`, `$ato`) rodava ANTES da regra de
+Combustível no código, então `gasolina` (R$77,3mi!) e `etanol` (R$7mi)
+foram classificados como Saúde/Farmacêutico por acidente. Mais falsos
+positivos pelo mesmo padrão de sufixo: `cortina`, `resina`, `prato`,
+`boina`, `cartolina` (~R$10mi somados). **Total corrigido: ~R$87mi (10,2%
+do bucket Farmacêutico) estava contaminado.** Reordenado (Combustível
+agora checa primeiro) + exclusão explícita dos 5 falsos positivos de
+sufixo. Saúde/Farmacêutico corrigido: R$854mi → **R$767mi** (número
+limpo).
+
+**Concentração do pilar inteiro (Farmacêutico + Hospitalar + Implantável,
+amostra agregada muito mais robusta que item isolado — 198 órgãos com 2+
+compras):** **23,7% de monopólio local** — **melhor que o benchmark pneu
+(30,8%)**. Confirma estatisticamente (não só direcionalmente) que Saúde
+como setor é mercado mais aberto que o canal onde o LICIT já compete e
+ganha.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
