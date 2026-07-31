@@ -1698,6 +1698,49 @@ compras):** **23,7% de monopólio local** — **melhor que o benchmark pneu
 como setor é mercado mais aberto que o canal onde o LICIT já compete e
 ganha.
 
+## Item 5 — correção grave na lista de prioridade (30/jul/2026)
+
+**Nunca tínhamos medido concentração de verdade (monopólio local por
+órgão) pra switch, microcomputador e carne bovina** — só a fragmentação
+ingênua nacional (fornecedor/item), a mesma métrica que já provamos
+enganosa (caso "peça automotiva", diesel/gasolina). Medindo agora com a
+métrica correta:
+
+| Candidato | % monopólio local | vs pneu (30,8%) |
+|---|---|---|
+| Switch | **69,8%** | **muito pior — descartar** |
+| Carne bovina in natura | **56,0%** | **muito pior — descartar** |
+| Microcomputador | 35,2% | pior (zona cinzenta, não descarta mas rebaixa) |
+
+**Switch e carne bovina saem da lista de prioridade** — fragmentação
+nacional aparente (54% e 33% fornecedor/item, que pareciam bons) escondia
+monopólio local forte, exatamente o padrão de erro que a skill avisa desde
+o início da sessão (agregação nacional escondendo concentração regional).
+
+### Lista de prioridade final, corrigida (30/jul/2026)
+
+Ordenada por % monopólio local (menor = melhor), todos com métrica
+consistente vs benchmark pneu (30,8%):
+
+| Candidato | % monopólio local | Valor | Nota |
+|---|---|---|---|
+| Cardioversor desfibrilador | 11,1% | R$25,5mi | ressalva: ticket alto, amostra pequena |
+| Dieta infantil | 4,3% | R$22mi | saúde |
+| Cloreto de sódio | 6,7% | R$41mi | saúde/insumo |
+| Seringa | 22,2% | R$29mi | saúde |
+| Ar condicionado | 24,6% | R$338mi | limpo, auditado fundo |
+| Insulina (medicamento) | 27,3% | R$767mi (pilar) | saúde farmacêutico |
+| Fralda descartável | 28,0% | R$30mi | saúde |
+| Automóvel | 30,0% | R$1,75bi | ticket alto |
+| **— benchmark pneu — 30,8% —** | | | |
+| Microcomputador | 35,2% | R$202mi | zona cinzenta, não prioritário |
+| Conjunto escolar | — | R$355mi | sinal fraco (13 órgãos), watch |
+| ~~Switch~~ | ~~69,8%~~ | — | **descartado** |
+| ~~Carne bovina~~ | ~~56,0%~~ | — | **descartado** |
+
+**Pilar Saúde (23,7% agregado) continua sendo o achado mais forte da
+sessão** — mais robusto estatisticamente que qualquer candidato isolado.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
