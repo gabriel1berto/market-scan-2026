@@ -2028,6 +2028,66 @@ regex, não só nesse projeto:**
    declarar uma regra "confiável" — foi assim que se achou 9 dos 10
    bugs reais desta auditoria.
 
+## ⚠️ CORREÇÃO CRÍTICA — cobertura real é 45,9%, não 95,4% (31/jul/2026)
+
+Usuário pediu mais uma rodada com 200 itens ALEATÓRIOS por grupo (não
+mais a lista de grupos, itens individuais de verdade). Isso revelou o
+maior problema da sessão inteira, que invalida os números de cobertura
+reportados antes.
+
+**O que aconteceu:** toda a auditoria de hoje (mapeador de categoria,
+91,8%, depois 95,4%) foi construída sobre `base` filtrado por
+`having count(*) >= 8` — ou seja, só contava grupos onde o MESMO texto
+exato de `descricao_item` se repete 8+ vezes. Isso foi uma escolha de
+performance (evitar timeout em agregação), não uma decisão consciente
+de escopo — e ninguém (nem eu, nem o usuário) tinha percebido o
+tamanho do viés até essa amostra de itens individuais.
+
+**Tamanho real do problema, medido:**
+```
+Itens em grupo frequente (≥8 repetições exatas): 63.425 (40,2%)
+Itens em grupo raro (<8, texto único ou quase):  94.458 (59,8%)
+Total (após filtro básico de tamanho/valor):    157.883
+```
+
+**Por que a maioria é "rara":** remédio de verdade quase sempre tem
+dosagem/formulação escrita no texto (`"amoxicilina 500mg cápsula"`,
+`"dipirona 500 mg/ml c/10 ml"`) — cada variação de dosagem vira uma
+string ÚNICA, nunca repete 8 vezes. Mesmo padrão pra equipamento (modelo
+específico) e qualquer item bem descrito. Os grupos "frequentes" que
+auditei o dia todo eram majoritariamente descrição GENÉRICA/BOILERPLATE
+("amoxicilina" sozinha, sem dosagem) — uma fatia real mas MINORITÁRIA
+da base.
+
+**Cobertura real recalculada (população completa, sem o filtro `>=8`):**
+| | Itens | % |
+|---|---|---|
+| Categoria (produto classificado) | 38.405 | 24,3% |
+| Serviço (corretamente excluído) | 34.135 | 21,6% |
+| **Resolvido de verdade** | **72.540** | **45,9%** |
+| Outros (sem regra ainda) | 85.382 | 54,1% |
+
+**Isso NÃO significa que a regex está errada** — a amostra de 200 itens
+individuais mostrou que ela CLASSIFICA CORRETAMENTE quando aplicada a
+item raro também (quase 100% dos remédios com dosagem foram reconhecidos
+certo). O problema é que a AGREGAÇÃO/CONTAGEM de cobertura de hoje nunca
+rodou sobre a base completa — só sobre a fatia frequente.
+
+**Por que não corrigi ainda:** rodar a classificação completa (sem
+`>=8`) em 157k linhas individuais estourou timeout no Supabase MCP
+repetidamente. Precisa de abordagem diferente (lote por faixa de ID,
+ou índice funcional pra acelerar o regex, ou aceitar rodar em background
+mais devagar) — não é mais só "melhorar a regex", é problema de
+performance de execução.
+
+**Lição mais importante da sessão:** todo número de cobertura reportado
+hoje até este ponto precisa ser lido como "cobertura da fatia frequente
+da base", não "cobertura real". Isso só apareceu porque o usuário insistiu
+em ir além de amostra de grupo pra itens individuais — validação por
+amostra de GRUPO (mesmo que completa) ainda pode esconder viés de
+seleção estrutural se o critério de agrupamento (aqui, `count >= 8`)
+não for representativo da população real.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
