@@ -1543,3 +1543,54 @@ do automóvel.
 supera com folga os 8 já validados manualmente (ar condicionado, automóvel,
 insulina, carne bovina, microcomputador, switch, conjunto escolar). Lista
 de prioridade não muda.
+
+## Varredura estendida além do top 200 (30/jul/2026) — usuário pediu ir até parar por token
+
+### Rank 1-200: Fase 2 (triagem rápida) concluída
+
+Confirmado: maioria dos 200 cai nos 7 pilares já validados (saúde/
+hospitalar, saúde/farmacêutico, TI, veículos, construção civil,
+alimentação, mobiliário/educação/limpeza) — não precisam auditoria funda
+individual, o padrão de pilar já é conhecido. Genéricos vazios sem contexto
+("Solução", "Suporte", "Bomba", "Filtro", "Peças/Acessórios Equipamentos
+Especializados") — **não classificáveis sem abrir campo JSON estruturado**
+(aplicação/tipo), descartados como não-auditáveis pelo texto visível.
+Watch list de ticket alto: dispositivos médicos implantáveis (marca-passo,
+endoprótese aorta, prótese quadril) e medicamento de especialidade com
+fornecedor único (`selexipague`, 1 fornecedor só) — mesmo perfil de risco
+do cardioversor.
+
+### Rank 201-500: mesma confirmação, nenhum pilar novo
+
+Escaneado (não auditado fundo individualmente — volume não compensa,
+99% recai nos pilares já mapeados). Achados de processo, não de nicho:
+
+**Serviço/evento que escapou do regex v4** (adicionar à exclusão em usos
+futuros): `show|capacitaç[ãa]o|colonoscopia|decoraç[ãa]o.{0,10}evento|
+organizaç[ãa]o de (congresso|arquivo)|traduç[ãa]o|interpretaç[ãa]o|
+assessoria|pesquisa.{0,10}estudo|invent[áa]rio|catalogaç[ãa]o|sondagem|
+descupiniza`.
+
+**Boilerplate/junk novo** (não é produto, é template de edital):
+`grupo de itens \d|lote unico|exemplo|item global do contrato|^\.$|ver
+itens e quantidades|conforma planilha em anexo|classificaç[ãa]o de
+produto`.
+
+**Candidatos de baixo valor, não priorizados (ticket pequeno, <R$5mi,
+não compensa aprofundar agora):** urna mortuária, container, aparelho de
+amplificação sonora individual (AASI), extintor de incêndio.
+
+**Nenhum candidato novo de alto valor achado neste lote** — reforça que a
+lista de 8 validados + esforço em "peça automotiva" já capturou o essencial
+do que o ranking sistemático consegue achar nessa faixa de valor.
+
+**Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
+30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
+`container`, `urna mortuária`, `extintor incêndio` confirmados produto real
+sem contexto escondido (rótulo já é a descrição completa); `grupo de itens
+01` confirmado boilerplate puro (texto idêntico em toda ocorrência, zero
+informação de produto) — descarte correto. Também validei a suposição de
+"pilar saúde não precisa auditoria funda": `fio de sutura agulhado` (271
+itens) mediu **10,5% monopólio local**, bem melhor que o benchmark pneu
+(30,8%) — confirma que a categorização por pilar, sem auditoria individual
+item a item, é segura nessa faixa de dado (saúde/hospitalar consistente).
