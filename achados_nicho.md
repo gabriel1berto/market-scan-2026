@@ -1423,8 +1423,39 @@ com o ruído removido.
 **Lição pro Estágio C completo:** expandir recall via keyword é fácil, mas
 cada candidato precisa da mesma auditoria de amostra antes de confiar —
 "ganho de recall" sozinho não é sinal de sucesso, pode ser sinal de estar
-capturando lixo. Os outros 4 candidatos (switch, microcomputador, automóvel,
-carne bovina) precisam do mesmo tratamento antes de considerar o filtro
-pronto — não feito ainda nesta sessão por tempo, mas o padrão acima
-(keyword amplo → checar amostra → identificar categoria de ruído →
-excluir → medir de novo) é o método replicável.
+capturando lixo.
+
+## Item 4 (continuação) — resto do top 20, mesmo tratamento (30/jul/2026)
+
+Repeti o método (keyword amplo → amostra → identificar ruído → excluir →
+medir) pros outros candidatos do top 20 por volume. Resultado final, todos
+com auditoria de amostra feita (não é só expansão bruta):
+
+| Candidato | Itens (limpo) | Valor | Ruído achado e excluído |
+|---|---|---|---|
+| Automóvel (unificado c/ "veículo transporte pessoal" — eram o mesmo candidato duplicado) | 159 | R$1,75bi | Cadeirinha/assento infantil "para automóvel" (acessório, 25 itens) |
+| Insulina (medicamento) | 235 | R$558mi | Separado de "bomba/sistema de infusão de insulina" — dispositivo médico é outro ticket/mercado, não medicamento |
+| Insulina (dispositivo médico — sub-nicho separado) | 61 | R$17,3mi | — |
+| Conjunto escolar | 156 | R$355mi | Limpo, sem ruído relevante achado |
+| Ar condicionado | 2.224 | R$338mi | (ver acima) |
+| Carne bovina in natura | 1.281 | R$309mi | "Fornecimento de refeição pronta/marmitex/cesta" (serviço de alimentação, não carne crua) |
+| Microcomputador | 535 | R$202mi | Fonte/memória/placa/processador/cooler/gabinete "para desktop" (componente avulso, não o computador) |
+| Switch (rede) | 284 | R$120mi | "Telefone" contaminando (4 itens) |
+
+**Não fechado — ônibus continua sujo mesmo após 2 rodadas de exclusão**
+(503→411 itens, ainda ~30x o baseline exato de 14). Causa principal: padrão
+`ESCOLA: X / COMUNIDADE: Y / VEICULO: ÔNIBUS...` — são linhas de **rota de
+transporte escolar** (parte de um serviço de fretamento, listando qual
+ônibus atende qual comunidade), não compra de veículo. Também pegou
+vulcanização de pneu, lavagem, recarga de extintor, montagem de pneu —
+adicionei essas palavras à exclusão mas não resolveu totalmente. **Não
+reportar um número de "ônibus" como confiável sem mais trabalho** — o
+padrão de rota escolar precisa de regra própria (provavelmente descartar
+qualquer linha com "comunidade:" ou "escola:" no início, que não pegou
+100% dos casos).
+
+**Traps confirmados, não promovidos** (já sabidos, não precisam filtro):
+controle de abastecimento de veículos, secretária, comunicação por correio,
+consulta médica, psicologia-terapia, refeições industriais/fornecimento de
+refeições, óleo diesel, gasolina comum, teleatendimento — todos serviço ou
+concentração disfarçada de produto.
