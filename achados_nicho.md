@@ -1594,3 +1594,33 @@ informação de produto) — descarte correto. Também validei a suposição de
 itens) mediu **10,5% monopólio local**, bem melhor que o benchmark pneu
 (30,8%) — confirma que a categorização por pilar, sem auditoria individual
 item a item, é segura nessa faixa de dado (saúde/hospitalar consistente).
+
+### Rank 500-800: ponto de retorno decrescente — parada consciente
+
+Escaneado até valor cair pra faixa R$500k-1,6mi por candidato. Mesmo
+padrão de pilar se repete (mais dezenas de medicamentos específicos, mais
+consumível hospitalar, mais mobiliário/limpeza/material escolar) — nenhum
+pilar novo, nenhum candidato de valor competitivo com os 8 já validados.
+
+**Decisão de parar a varredura exaustiva aqui, conscientemente (não é
+falta de token, é saturação de informação):** abaixo de ~R$1-2mi de valor
+total por candidato, nenhum item sustenta negócio sozinho — é a cauda longa
+fragmentada que a própria skill já avisa pra não perseguir (muitos itens
+pequenos e desconectados, sem produto único com volume suficiente). Rank
+800+ continuaria mostrando o mesmo padrão de pilar em valor ainda menor —
+diminishing returns confirmado, não presumido.
+
+**Achado de processo (não de nicho) nesse lote:** mais boilerplate
+descoberto (`"mês"` como desc_norm — unidade de faturamento, não produto)
+e mais serviço escapando regex (`ressonância magnética`, `cintilografia`,
+`credenciamento`, `auditoria`, `nutricionista`, `home care` — todos
+serviço médico/administrativo).
+
+## Síntese final da varredura estendida (30/jul/2026)
+
+Cobertura: ranks 1-800 por valor (de ~3.800 grupos totais), equivalente a
+~85%+ do valor acumulado da base (per curva de Pareto medida antes). Nenhum
+candidato novo superou os 8 já validados. Lista de prioridade permanece:
+ar condicionado, automóvel, insulina (medicamento), conjunto escolar, carne
+bovina in natura, microcomputador, switch, insulina (dispositivo médico) —
+mais peça automotiva como extensão natural do canal pneu já operante.
