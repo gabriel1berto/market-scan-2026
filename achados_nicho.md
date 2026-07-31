@@ -1584,6 +1584,82 @@ amplificação sonora individual (AASI), extintor de incêndio.
 lista de 8 validados + esforço em "peça automotiva" já capturou o essencial
 do que o ranking sistemático consegue achar nessa faixa de valor.
 
+## Mapeador de Categoria (30/jul/2026) — usuário pediu hierarquia tipo/grupo/subgrupo/item
+
+Motivação: usuário notou que "automóvel" (1 grupo, R$1,59bi) apareceu maior
+que qualquer item de saúde isoladamente, e perguntou se isso fazia sentido.
+**Resposta: não fazia** — é distorção de granularidade de nomenclatura, não
+de mercado real. "Automóvel" é termo genérico que agrega TODO carro do
+Brasil num `desc_norm` só; medicamento tem nome de princípio ativo
+regulado por lei (ANVISA), cada um vira grupo separado, fragmentando o que
+é na verdade um setor gigante em ~150 buckets pequenos.
+
+**Construído: mapeador regex categoria (`desc_norm` → categoria ampla),
+19 categorias, iterado 2 rodadas:**
+
+| Categoria | Grupos | Valor | % do total |
+|---|---|---|---|
+| Veículos/Frota | 20 | R$2,65bi | 26,9% |
+| Combustível | 35 | R$1,31bi | 13,3% |
+| **Outros/Não Classificado** | 1.099 | R$1,29bi | **13,1%** |
+| Construção Civil/Material | 31 | R$903mi | 9,2% |
+| Saúde/Farmacêutico | 112 | R$854mi | 8,7% |
+| Saúde/Hospitalar (consumível+equip.) | 86 | R$632mi | 6,4% |
+| Educação/Material Escolar | 9 | R$469mi | 4,8% |
+| TI/Hardware e Redes | 30 | R$468mi | 4,8% |
+| Alimentação/Perecível | 34 | R$337mi | 3,4% |
+| Equipamento HVAC/Climatização | 6 | R$183mi | 1,9% |
+| Alimentação/Mercearia | 44 | R$149mi | 1,5% |
+| Mobiliário | 40 | R$111mi | 1,1% |
+| Saúde/Dispositivo Implantável | 23 | R$99mi | 1,0% |
+| Segurança/Vigilância Eletrônica | 6 | R$72mi | 0,7% |
+| Agro/Paisagismo | 4 | R$71mi | 0,7% |
+| Gráfico/Insumo de Impressão | 8 | R$51mi | 0,5% |
+| Equipamentos/Fitness | 4 | R$48mi | 0,5% |
+| Náutico/Fluvial | 3 | R$47mi | 0,5% |
+| Limpeza/Higiene | 9 | R$42mi | 0,4% |
+| Veículos/Peças e Acessórios | 19 | R$34mi | 0,3% |
+| EPI/Uniforme | 9 | R$29mi | 0,3% |
+
+**Cobertura: 86,9% do valor total classificado por categoria.** Confirma
+que Saúde combinada (Farmacêutico + Hospitalar + Implantável = R$1,58bi,
+144 grupos) é comparável a Combustível (R$1,31bi) e maior que Construção
+Civil (R$903mi) — validando a suspeita do usuário.
+
+**Bugs achados e corrigidos na 1ª iteração:** `ar condicionado` (categoria
+inteira faltando!) e `água mineral` nunca tinham entrado na regra —
+esquecimento simples, não erro conceitual. Rede de nomes farmacêuticos
+ampliada de 18 nomes específicos pra sufixos genéricos de nomenclatura
+regulatória (`-ina`, `-ol`, `-ato`, `-eno`, `cloridrato`, `mesilato` etc)
+— saltou de 53 pra 112 grupos capturados.
+
+**Outlier scan (fornecedor ≤2 nacional, valor >R$5mi) — nenhum achado
+novo, todos explicáveis:** psicologia-terapia (1 forn, serviço já
+conhecido), consulta oftalmologia (2, serviço), enfermagem (2, serviço/
+staffing), `selexipague` (1, medicamento ultra-especialidade — monopólio
+genuíno de mercado, não falha de classificação), tinta ofsete (1, insumo
+nichado), gráfico uso oficial/segurança (2, restrição regulatória natural
+de impressão de segurança), prótese de ombro implantável (2, dispositivo
+especializado).
+
+**Limitação técnica que impediu fechar >90% hoje:** queries com regex
+muito grande (exclusão de serviço + junk + categorias combinadas)
+começaram a dar timeout no Supabase MCP depois de ~60 queries na sessão —
+não consegui investigar o restante de "Outros" (13,1%, 1.099 grupos) com
+mais detalhe. Não é limitação conceitual do método (a abordagem de
+iterar regex funcionou bem, foi de 63%→87% em 2 rodadas) — é limitação
+de execução desta sessão específica. Próxima sessão: retomar com queries
+mais simples/menores por vez, focar nos maiores grupos de "Outros"
+restantes primeiro.
+
+**Nível "grupo/subgrupo/item" (4 níveis pedido pelo usuário) — parcial:**
+entregue 2 níveis (categoria + `desc_norm`/item). "Grupo" e "subgrupo"
+intermediários não foram construídos ainda — precisaria de mais uma
+rodada de trabalho (ex: dentro de Saúde/Farmacêutico, subgrupo por
+"convencional" vs "alto-custo/biológico"; dentro de Veículos, "frota"
+vs "peças" já existe como categoria separada, poderia virar subgrupo de
+um "Automotivo" mais amplo).
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
