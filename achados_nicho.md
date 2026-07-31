@@ -1792,6 +1792,41 @@ em 2 níveis (categoria + item), suficiente pro objetivo desta sessão.
    Saúde (pilar inteiro, 23,7%) é o achado mais forte e mais robusto de
    toda a sessão.
 
+## Atualização 31/jul/2026 — extração cresceu, mapeador regrediu e foi recalibrado
+
+**Extração overnight:** base cresceu de 344k → **428.611 itens** (+84.611,
+UFs novas entrando). Run gigante (`30370357766`): 77 sucesso, **37 falha
+real** (não timeout — `psycopg2.OperationalError: SSL connection has been
+closed unexpectedly`, falha transiente do pooler Supabase, script é
+resumível), 35 cancelado (timeout normal), 8 pendentes. UFs afetadas pelas
+falhas: PA, PB, PR, PE, PI, RN, RS, RO. **Decisão do usuário: redisparar as
+37 falhas só depois que os 8 pendentes terminarem** (não redisparar agora).
+
+**Mapeador de categoria regrediu de 91,8% → 74,8%** com a base nova (UFs
+novas trazem variação de texto que as regras de ontem não cobriam) — sinal
+esperado, não bug: mapeador é calibrado no dado que viu, precisa reiterar
+a cada leva grande de dado novo.
+
+**4ª rodada de calibração, achados novos:**
+- **`contratação de pessoa jurídica`** (R$1,3bi combinado, 2 variantes!) —
+  boilerplate genérico de contratação de serviço nunca visto antes, virou
+  exclusão de serviço.
+- **`arma de fogo - empunhável - médio porte`** (R$178,6mi) — **categoria
+  nova de verdade** nunca vista (Segurança Pública/Armamento), provável de
+  UF nova com licitação de armamento policial. Fora do escopo de negócio
+  do LICIT (não é produto revendável nesse canal) — registrado como dado,
+  não candidato.
+- Mais serviço escapando: corretagem de plano de saúde, cartões
+  magnéticos de vale alimentação, "construção de X" mais genérico.
+- Farmacêutico: `aflibercepte` (novo nome) + regex de sufixo relaxado
+  (`ina`/`cepte$` sem `$` estrito no meio, pra pegar variantes tipo
+  "anfotericina b" com sufixo à direita).
+
+**Resultado: 87,7% classificado** — recuperou quase todo o terreno perdido
+(91,8%→74,8%→87,7%). Segue o padrão: mapeador precisa de manutenção
+recorrente conforme a base cresce, não é "resolvido uma vez, pronto pra
+sempre".
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
