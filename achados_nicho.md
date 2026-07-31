@@ -1459,3 +1459,49 @@ controle de abastecimento de veículos, secretária, comunicação por correio,
 consulta médica, psicologia-terapia, refeições industriais/fornecimento de
 refeições, óleo diesel, gasolina comum, teleatendimento — todos serviço ou
 concentração disfarçada de produto.
+
+## Ranking sistemático com métrica de concentração corrigida (30/jul/2026)
+
+Usuário pediu método pra achar nicho combinando volume alto + baixa
+competitividade, escalado. **Primeira tentativa de métrica estava errada**:
+medi "1 fornecedor dominando MUITOS órgãos" (`max_orgaos_1_fornecedor /
+orgaos_totais`) — isso não pega o trap real. Diesel/gasolina (traps
+conhecidos) deram score BOM nessa métrica errada (1-6% "domínio nacional")
+porque o trap real não é 1 distribuidor nacional, é **1 distribuidor
+LOCAL dominando cada órgão individualmente** — métrica errada não distingue
+isso de mercado genuinamente aberto.
+
+**Métrica corrigida:** `% de órgãos onde um único fornecedor ganhou 100%
+das compras daquele item (com ≥2 compras no órgão)` — mede monopólio local
+de verdade, não dominância nacional.
+
+**Achado-âncora / calibração:** `pneu veículo automotivo` (core do LICIT,
+onde a empresa já compete e ganha) deu **30,8% de monopólio local** — isso
+vira o **benchmark**: candidato com % menor é pelo menos tão aberto quanto
+o mercado que já funciona pra empresa.
+
+**Candidatos mais abertos que pneu (30,8%):**
+| Candidato | Itens | Valor | % monopólio local |
+|---|---|---|---|
+| Dieta infantil | 183 | R$22mi | 4,3% |
+| Cloreto de sódio | 73 | R$41mi | 6,7% |
+| Seringa | 103 | R$29mi | 22,2% |
+| Aparelho ar condicionado | 654 | R$174mi | 24,6% |
+| Insulina | 57 | R$219mi | 27,3% |
+| Fralda descartável | 156 | R$30mi | 28,0% |
+| Automóvel | 52 | R$1,59bi | 30,0% |
+
+**Candidatos frescos (não vistos antes nessa sessão):**
+- Muda de planta — 55 itens, R$45,7mi, 25% (viveiro/paisagismo municipal)
+- Motor de popa — 38 itens, R$39,3mi, 20% (náutico/fluvial)
+- Cardioversor desfibrilador implantável — 23 itens, R$21mi, 16,7%
+  (ticket altíssimo, capital-intensivo — watch, mesmo perfil do automóvel)
+
+Reconfirma saúde/hospitalar como pilar consistente (seringa, fralda, dieta
+enteral/infantil, curativo, agulha hipodérmica — todos 20-33%).
+
+**Limitação que persiste (não resolvida, decisão consciente):** ranking
+ainda parte de `desc_norm` exato — sub-conta produto com descrição
+inconsistente (mesmo furo documentado na seção "Escala nacional"). Não
+investido em clustering semântico melhor ainda; mitigado por triangulação
+manual (foi assim que "peça automotiva" foi achado, fora do ranking).
