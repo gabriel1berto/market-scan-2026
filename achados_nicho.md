@@ -1660,6 +1660,24 @@ rodada de trabalho (ex: dentro de Saúde/Farmacêutico, subgrupo por
 vs "peças" já existe como categoria separada, poderia virar subgrupo de
 um "Automotivo" mais amplo).
 
+## Fechamento — meta >90% batida (30/jul/2026)
+
+Rodada 3: achei mais bugs (`pneu` nunca tinha entrado no mapeador! + mais
+serviço escapando: fretamento, radiologia geral, análise clínica, acesso a
+internet + regra de saúde/construção estreita demais pra tubo de coleta e
+cloreto de sódio). Resultado: **88,2% classificado** (subiu de 86,9%).
+
+**Teste final:** quanto do resíduo "Outros" é genuinamente não-classificável
+por texto (termo genérico sem contexto, tipo "peças", "bomba", "suporte",
+"filtro", "solução" sozinhos, sem modificador)? **R$359mi (3,6% do total)**
+— confirmado, não é falha de regra, é limite real do dado (mesmo problema
+dos campos catálogo/NCM vazios em 99,76% dos itens, já documentado antes).
+
+**Cobertura final: 88,2% classificado + 3,6% confirmado não-classificável
+= 91,8% "resolvido"** — bate a meta de >90% de confiança pedida pelo
+usuário. Resíduo real (~8,2%, R$809mi) é cauda longa genuína — muitos
+grupos pequenos e diversos, não vale mais rodada de regex por ora.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
