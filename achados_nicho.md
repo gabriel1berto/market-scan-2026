@@ -1901,6 +1901,73 @@ regra de classificação — a lição já apareceu antes na sessão (F1 do rege
 de serviço) mas essa foi a confirmação mais dura: bug real, alto valor,
 só visível com n grande.
 
+## Passagem por população completa de todas as categorias (31/jul/2026)
+
+Usuário pediu: passar por TODOS os grupos (não amostra), aprender com os
+erros, desenhar método que cubra a CLASSE de erro, não só o caso
+individual. Rodei população completa (não amostra) nas categorias de
+maior risco (palavra curta/genérica: Construção, Mobiliário, Veículos/
+Peças+Frota+TI). Achados novos, além do bug de sufixo `-ina` já corrigido:
+
+**Bug 3 — mesma palavra, domínio diferente (não é bug de regex, é
+ambiguidade real da língua):**
+- `cimento odontológico` / `cimento de ionômero de vidro` / `cimento
+  ortopédico` (37 itens) — cimento dentário/ósseo, não construção civil.
+- `mesa áudio / vídeo - switcher de vídeo` (24 itens, ~R$571k) — "mesa"
+  de mixagem de som, não móvel.
+
+**Bug 4 — rede de sinônimo incompleta:**
+- `aluguel de impressora / multifuncional / plotter / scanner` (28 itens)
+  — eu só tinha "locação" como sinônimo de aluguel na exclusão de
+  serviço, esqueci a palavra "aluguel" em si.
+
+**Bug 5 — categoria vizinha com rede semântica estreita demais:**
+- `peça equipamento médico` (59 itens) + `peça equipamento laboratório`
+  (23 itens) — minha regra de Saúde/Hospitalar só previa "equipamento
+  hospitalar/odontológico", não "médico/laboratório" — caem por engano
+  em Veículos/Peças (via `peça` genérico) por falta de rede semântica na
+  categoria certa.
+
+### Método geral pra evitar essa CLASSE de erro (não só os casos achados)
+
+**1. Nunca usar sufixo sem âncora de fim de palavra.** `\S+ina` sem `$`
+   pega substring em qualquer posição ("assINAtura"). Sempre `\S+ina$`
+   ou `\mPALAVRA\M` (Postgres: início/fim de palavra).
+
+**2. Sufixo curto (2-4 letras) é arriscado mesmo com âncora — português
+   tem morfologia repetitiva.** `-ina`, `-ol`, `-ato`, `-eno` aparecem em
+   centenas de substantivo comum por coincidência (tangerina, botina,
+   sapato, prato). Prefira **sufixo composto específico** (`cloridrato`,
+   `mesilato`, `dipropionato`) — muito mais raro de colidir por acaso.
+
+**3. Mesma palavra pode ter sentido técnico diferente por domínio —
+   isso NÃO é bug de regex, é ambiguidade real. Correção: usar o
+   MODIFICADOR como sinal de domínio, não a palavra-base sozinha.**
+   `cimento` sozinho → construção (caso comum); `cimento` + `odontológico/
+   ortopédico` → saúde. `mesa` sozinho → móvel; `mesa` + `áudio/vídeo/som`
+   → equipamento. Regra prática: pra toda palavra-base usada como critério
+   de categoria, perguntar "essa palavra tem uso técnico documentado em
+   OUTRO setor?" antes de aceitar sem contexto.
+
+**4. Rede de sinônimo tem que ser deliberadamente completa, não
+   confiar em 1 palavra por conceito.** "Aluguel" e "locação" são
+   sinônimos perfeitos em português jurídico/administrativo — ter só um
+   dos dois deixa buraco sistemático. Mesmo padrão pra outros pares:
+   "compra/aquisição", "manutenção/conserto", "fornecimento/suprimento".
+
+**5. Categoria vizinha (ex: Hospitalar) precisa cobrir a VARIAÇÃO REAL
+   de como a fonte descreve o conceito, não só o termo mais comum.**
+   "equipamento hospitalar" e "equipamento médico" e "equipamento
+   laboratório" são a mesma ideia com wording diferente — se só um
+   entra na regra, os outros vazam pra categoria vizinha errada (aqui,
+   Veículos/Peças via "peça" genérico).
+
+**6. Validação com amostra pequena (6-8) mede precisão aparente, não
+   real — sempre rodar população completa do grupo (`GROUP BY` já é
+   barato) antes de declarar categoria "confiável".** Esse foi o erro
+   corrigido nesta rodada: 96,7% numa amostra de 30 escondia um bug que
+   afetava 17% da população real.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
