@@ -1827,6 +1827,32 @@ a cada leva grande de dado novo.
 recorrente conforme a base cresce, não é "resolvido uma vez, pronto pra
 sempre".
 
+## Fechamento 95% — boilerplate quantificado (31/jul/2026)
+
+Base cresceu pra 428k+ itens (extração nacional continua). Regex cuidadoso
+completo mede **88,0% classificado** (confirmado, não a versão simplificada
+que tentei antes e que introduziu regressão real — dropei sem querer
+`gás|álcool|botijão` do Combustível numa tentativa de encurtar a query pra
+evitar timeout, não usei esse resultado).
+
+**Boilerplate puro quantificado:** `^lote|^proposta para|^conforme|^ver
+(itens|anexo|termo)|^grupo de itens \d|^item global|^\.$|^exemplo$|
+classificação de produto|^descrição conforme` → **R$779mi, 33 grupos,
+1.182 itens (7,4% do total)** — confirmado como boilerplate de verdade
+(texto de template de edital, sem produto identificável), não candidato
+escondido.
+
+**Falso positivo evitado nessa rodada:** `unidade disco` (produto real, TI)
+e `container, conforme o termo de referência` (produto real, container)
+quase entraram no filtro de boilerplate por bater `^unidade`/`conforme` —
+removidos do padrão antes de aplicar. `grupo musical`/`grupo motor-gerador`
+também quase entraram por `^grupo` genérico demais — trocado por `^grupo
+de itens \d` (específico).
+
+**Cobertura final: 88,0% classificado + 7,4% boilerplate confirmado =
+95,4% "resolvido"** — bate a meta de 95%. Resíduo real sem explicação:
+apenas **4,6% (R$481mi)** — cauda genuína, não vale mais rodada de regex.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
