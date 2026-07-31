@@ -1853,6 +1853,54 @@ de itens \d` (específico).
 95,4% "resolvido"** — bate a meta de 95%. Resíduo real sem explicação:
 apenas **4,6% (R$481mi)** — cauda genuína, não vale mais rodada de regex.
 
+## Auditoria de precisão pós-95% (31/jul/2026) — bug crítico achado com amostra maior
+
+Usuário pediu amostra de 100 aleatórios por categoria (amostra anterior de
+6-8 era "ridiculamente pequena", correto). Amostra pequena tinha escondido
+um bug real: **sufixo `^\S+ina` (sem `$` no final) não exige que a palavra
+TERMINE em "ina"** — casava qualquer palavra que CONTENHA "ina" em qualquer
+posição. Português tem centenas de palavras assim que nada têm a ver com
+farmacêutico: **"assINAtura"**, **"medICINA"**, **"vacINAção"**,
+**"treINAmento"**, **"ofICINA"**, **"usINAgem"**, **"máquINA"**,
+**"termINAl"**.
+
+Pior: mesmo corrigindo pra exigir final de palavra, **"-ina" ainda não é
+sinal confiável em português** — muito substantivo comum termina assim de
+verdade: `tangerina` (fruta), `botina` (calçado, 60 itens!), `bobina`
+(produto industrial), `cortina`/`cantina` (já sabidos).
+
+**Impacto medido: R$99,6mi (575 itens, 11,7% do bucket Farmacêutico)**
+estava contaminado por esse bug — palavras como assinatura de jornal,
+treinamento profissional, máquina de lavar roupa, sinalizador de trânsito,
+terminal de direção (peça automotiva!), tangerina, entre outras, tudo
+classificado errado como remédio.
+
+**Correção estrutural aplicada:** removido sufixo solto `-ina/-ol/-ato/
+-eno/-pam` (não confiável em português) — trocado por (1) sufixo composto
+farmacêutico seguro (`cloridrato`, `sódico`, `mesilato`, `dipropionato`,
+`besilato`, `maleato`, `fumarato`, `olamina` — esses sim quase exclusivos
+de remédio, nenhum substantivo comum em português os contém por acaso) +
+(2) sufixo de classe terapêutica com âncora de fim de palavra (`cilina$`,
+`micina$`, `profeno$`, `parina$`, `mabe$`, `nibe$`, `cepte$`, `zol$`) +
+(3) lista explícita expandida de ~30 nomes de remédio específicos achados
+na auditoria (dopamina, escetamina, duloxetina, cianocobalamina, atenolol,
+carvedilol, metoprolol, baclofeno, colecalciferol, alopurinol, etc).
+
+**Resultado: de 174 grupos capturados (muitos contaminados) para 98 grupos,
+quase todos limpos.** Só 2 resíduos pequenos ficaram: "transporte
+rodoviário - medicamento" (10 itens, é serviço de transporte, não o
+remédio) e "acetato de etila" (8 itens, solvente industrial, não
+farmacêutico) — ambos baixo valor, não corrigidos por ora (menos de
+R$500k combinados).
+
+**Lição de processo:** a amostra de 6-8 itens por categoria (feita antes)
+tinha 96,7% de acerto aparente — mas era estatisticamente pequena demais
+pra pegar um bug que afetava 17%+ dos grupos da categoria. Amostra grande
+(100+, ideal population completa quando viável) é necessária pra validar
+regra de classificação — a lição já apareceu antes na sessão (F1 do regex
+de serviço) mas essa foi a confirmação mais dura: bug real, alto valor,
+só visível com n grande.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
