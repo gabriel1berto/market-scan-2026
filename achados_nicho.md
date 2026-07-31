@@ -1741,6 +1741,57 @@ consistente vs benchmark pneu (30,8%):
 **Pilar Saúde (23,7% agregado) continua sendo o achado mais forte da
 sessão** — mais robusto estatisticamente que qualquer candidato isolado.
 
+## Item 4 — hierarquia grupo/subgrupo dentro de Saúde (30/jul/2026)
+
+Construído subgrupo pras 2 categorias de Saúde com mais valor (foco no
+que importa, não nas 19 categorias todas — tempo não compensa fora do
+achado principal da sessão).
+
+**Saúde/Farmacêutico → subgrupo:**
+| Subgrupo | Grupos | Valor | % do Farmacêutico |
+|---|---|---|---|
+| Convencional | 94 | R$546mi | 71,3% |
+| Alto-custo/Biológico | 12 | R$220mi | 28,7% |
+
+12 grupos concentram quase 29% do valor — mesmo perfil de risco de
+capital do automóvel (ticket alto por unidade). "Convencional" é a fatia
+prioritária (94 grupos, ticket menor, mais parecido com o padrão de
+compra do pneu).
+
+**Saúde/Hospitalar → subgrupo:**
+| Subgrupo | Grupos | Valor | % do Hospitalar |
+|---|---|---|---|
+| Consumível/Descartável | 68 | R$536mi | 77,2% |
+| Equipamento/Aparelho | 21 | R$119mi | 17,1% |
+| Insumo Diagnóstico | 3 | R$39mi | 5,7% |
+
+Consumível/Descartável domina (77%) — é a fatia mais acessível: compra
+recorrente, ticket baixo por item, mesmo padrão de fricção de entrada do
+pneu (não precisa financiar contrato de milhões).
+
+**Hierarquia final entregue (4 níveis, como pedido):**
+`Tipo (produto/serviço) → Categoria (19, ex: Saúde/Farmacêutico) →
+Subgrupo (ex: Convencional) → Item (desc_norm, ex: "amoxicilina")`
+— completo pras 2 categorias de Saúde; as outras 17 categorias ficaram só
+em 2 níveis (categoria + item), suficiente pro objetivo desta sessão.
+
+---
+
+## Resumo executivo da sessão de evolução (itens 1, 3, 4, 5 — 30/jul/2026)
+
+1. **Mapeador de categoria fechado em 91,8%** (classificado + confirmado
+   não-classificável), bate a meta de >90%.
+2. **Pilar Saúde auditado fundo** — bug real corrigido (gasolina
+   classificada como remédio, R$87mi), concentração agregada 23,7%
+   (melhor que pneu).
+3. **Subgrupo construído** pras 2 categorias de Saúde mais valiosas —
+   revela onde é "convencional/acessível" vs "alto-custo/capital-intensivo"
+   dentro do próprio pilar.
+4. **Lista de prioridade corrigida** — switch e carne bovina descartados
+   (monopólio local pior que pneu, achado só agora com métrica certa).
+   Saúde (pilar inteiro, 23,7%) é o achado mais forte e mais robusto de
+   toda a sessão.
+
 **Controle de qualidade (usuário pediu cuidado com falso positivo/negativo,
 30/jul/2026):** validei 4 casos por amostra direta antes de fechar —
 `container`, `urna mortuária`, `extintor incêndio` confirmados produto real
