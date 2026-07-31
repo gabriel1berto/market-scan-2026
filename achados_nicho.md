@@ -1505,3 +1505,41 @@ ainda parte de `desc_norm` exato — sub-conta produto com descrição
 inconsistente (mesmo furo documentado na seção "Escala nacional"). Não
 investido em clustering semântico melhor ainda; mitigado por triangulação
 manual (foi assim que "peça automotiva" foi achado, fora do ranking).
+
+## Auditoria completa dos 3 candidatos frescos (30/jul/2026) — 2 de 3 descartados
+
+Mesmo tratamento Estágio C (keyword → ruído → filtro limpo → concentração)
+aplicado aos 3 achados novos do ranking sistemático.
+
+**Ruído achado (mesmos 2 padrões de sempre):**
+- Muda de planta: "SAQUINHO PRETO PARA MUDAS", "HIDROGEL PARA PLANTIO" —
+  acessório, não a muda.
+- Motor de popa: "EMBARCAÇÃO... COM MOTOR POPA 90HP" — compra do barco
+  inteiro, motor é só especificação (mesmo padrão automóvel/ar
+  condicionado).
+- Cardioversor: sigla `\yCDI\y` deu match falso ("TRICICLO CARGO", "Carro
+  de Emergência" — nada a ver, colisão de sigla) — removida da regex.
+  "PAPEL TERMOSENSÍVEL... COMPATÍVEL COM CARDIOVERSOR" — acessório.
+
+**Resultado limpo + concentração (vs benchmark pneu = 30,8%):**
+
+| Candidato | Itens | Valor | % monopólio local | Veredito |
+|---|---|---|---|---|
+| Cardioversor desfibrilador implantável | 68 | R$25,5mi | 11,1% | melhor que pneu, mas ver ressalvas |
+| Motor de popa | 72 | R$43,6mi | 50,0% | **pior que pneu — descartar** |
+| Muda de planta | 139 | R$46,6mi | 61,9% | **pior que pneu — descartar** |
+
+**Motor de popa e muda de planta descartados** — mais concentrados
+localmente que o mercado onde o LICIT já compete e ganha, não representam
+avanço.
+
+**Cardioversor não promovido sem ressalva** — 2 furos: (1) amostra
+estatisticamente frágil (só 9 órgãos com 2+ compras); (2) ticket
+altíssimo/capital-intensivo (dispositivo implantável), falha o critério
+"acessível com capital de giro modesto" da skill — mesmo perfil de risco
+do automóvel.
+
+**Conclusão:** nenhum dos 3 candidatos achados via ranking sistemático
+supera com folga os 8 já validados manualmente (ar condicionado, automóvel,
+insulina, carne bovina, microcomputador, switch, conjunto escolar). Lista
+de prioridade não muda.
