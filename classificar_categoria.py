@@ -80,7 +80,7 @@ SERVICO_PATTERNS = [
     r"\balinhamento\b", r"\bbalanceamento\b", r"\balceamento\b", r"\benvelopamento\b",
     # rodada 8
     r"\bcontrata[çc][ãa]o\s+de\s+pessoa\s+jur[íi]dica\b", r"\bobra\s+rodovi[aá]ria\b",
-    r"\bobras?\s+de\s+engenharia\b", r"\bsecret[aá]ria\b", r"\btarifa\s+banc[aá]ria\b",
+    r"\bobras?\s+de\s+engenharia\b", r"\bsecret[aá]ria\b(?!\s+de\b)", r"\btarifa\s+banc[aá]ria\b",
     r"\bpropaganda\b", r"\bpublicidade\b", r"\baudiovisual\b", r"\bpassagem\s+rodovi[aá]ria\b",
     r"\boficinas?\b", r"\bseguro\s*/\s*garantia\b",
     # rodada 9
@@ -113,7 +113,9 @@ JUNK_TERMS = {
 }
 
 BOILERPLATE_PATTERNS = [
-    r"\bproposta\s+para\s+todos\s+os\s+itens\b", r"\bconforme\s+anexo\b",
+    r"\bproposta\s+para\s+todos\s+os\s+itens\b",
+    # nota: removido "conforme anexo" -- muito amplo, varria produto real
+    # que so' menciona "estampa/arte conforme anexo" como especificacao
     r"\bclassifica[çc][ãa]o\s+de\s+produto\s*\(\s*material\s*\)",  # sem \b final: ")" e nao-letra, \b nunca dispara ali (bug de classe nova)
     r"^lote\s*\d+\s*$", r"^exemplo$", r"\blote\s+[ée]\s+composto\b",
     # nota: "lote N" generico so' conta como boilerplate se for a string INTEIRA
@@ -422,7 +424,7 @@ CATEGORIAS = [
         r"\buniforme\b", r"\bluva(s)?\s+(de\s+)?(prote[çc][ãa]o|seguran[çc]a|borracha)\b",
         r"\bbota\s+(de\s+)?seguran[çc]a\b", r"\baventa(l|is)\b", r"\bbotina\s+(de\s+)?seguran[çc]a\b",
         r"\bvestu[aá]rio\s+(de\s+)?prote[çc][ãa]o\b", r"\bcolete\b", r"\bbota\s+de\s+borracha\b",
-    ], None),
+    ], [r"\b(colora[çc][ãa]o|cor|tamanho)\s+uniforme\b"]),
 ]
 
 _servico_re = re.compile("|".join(SERVICO_PATTERNS), re.IGNORECASE)
@@ -461,14 +463,14 @@ def main():
 
     resultados = [(id_, classificar(desc)) for id_, desc in rows]
 
-    con.execute("DROP TABLE IF EXISTS categoria_regex_v17")
-    con.execute("CREATE TABLE categoria_regex_v17 (id_item INTEGER, categoria TEXT)")
-    con.executemany("INSERT INTO categoria_regex_v17 VALUES (?, ?)", resultados)
+    con.execute("DROP TABLE IF EXISTS categoria_regex_v18")
+    con.execute("CREATE TABLE categoria_regex_v18 (id_item INTEGER, categoria TEXT)")
+    con.executemany("INSERT INTO categoria_regex_v18 VALUES (?, ?)", resultados)
     print(f"classificado e gravado ({time.time()-t0:.1f}s)", flush=True)
 
     print(con.execute("""
-        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v17),1) pct
-        FROM categoria_regex_v17 GROUP BY categoria ORDER BY n DESC
+        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v18),1) pct
+        FROM categoria_regex_v18 GROUP BY categoria ORDER BY n DESC
     """).fetchdf().to_string())
     con.close()
 
