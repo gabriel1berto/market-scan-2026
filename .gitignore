@@ -5,3 +5,6 @@ raw_cache/
 *.log
 .venv/
 clusters_resumo.json
+*.duckdb
+_tmp_*.py
+_*_out.txt
