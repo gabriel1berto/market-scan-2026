@@ -237,7 +237,8 @@ CATEGORIAS = [
         r"\bconex[ãa]o\s+hidr[aá]ulica\b", r"\bcabo\s+el[eé]trico\b",
         r"\bmateriais?\s+de\s+constru[çc][ãa]o\b",
         r"\babra[çc]adeira\b", r"\bparafuso(s)?\b", r"\btinta\b",
-        r"\bl[âa]mpada\b", r"\bbroca\b", r"\bmadeira\b", r"\bchapa\s+(de\s+)?a[çc]o\b",
+        r"\bl[âa]mpada\b", r"\bbroca\b", r"\bmadeira\s+(de\s+)?(constru[çc][ãa]o|serrada|compensada|tratada)\b",
+        r"\bchapa\s+(de\s+)?a[çc]o\b",
         r"\bdisjuntor\b", r"\bcadeado\b", r"\btubo\s+hidr[aá]ulico\b",
         r"\bbomba\s+hidr[aá]ulica\b", r"\bpersiana\b",
         r"\blumin[aá]ria\b", r"\btorneira\b", r"\balicate\b", r"\bbarra\s+(chata|a[çc]o)\b",
@@ -257,7 +258,8 @@ CATEGORIAS = [
         r"\bswitch\b", r"\broteador\b", r"\bcabo\s+de\s+rede\b",
         r"\bmicrocomputador\b", r"\bimpressora\b", r"\bsoftware\b", r"\btablet\b",
         r"\bunidade\s+(de\s+)?disco\b", r"\btransceiver\b",
-    ], [r"^papel\b", r"\bpapel\s+a4\b"]),
+    ], [r"^papel\b", r"\bpapel\s+a4\b", r"\bservidor\s+p[uú]blico\b",
+        r"\bcomenda\b", r"\bmesa\s+impressora\b"]),
 
     ("Eletronicos/Eletrodomesticos", [
         r"\btelevisor\b", r"\bfrigobar\b", r"\bmicrofone\b", r"\bbebedouro\b",
@@ -265,7 +267,8 @@ CATEGORIAS = [
         r"\bforno\s+microondas\b", r"\bventilador\b", r"\bbateria\s+(n[ãa]o\s+)?recarreg[aá]vel\b",
         r"\bbateria\s+estacion[aá]ria\b", r"\bpurificador\s+de\s+[aá]gua\b",
         r"\bcaixa\s+(de\s+)?som\b", r"\bbalan[çc]a\s+eletr[ôo]nica\b",
-        r"\bfone\s+(de\s+)?ouvido\b", r"\badaptador\b", r"\bfreezer\b", r"\brefrigerador\s+dom[eé]stico\b",
+        r"\bfone\s+(de\s+)?ouvido\b", r"\badaptador\s+(el[eé]trico|eletr[ôo]nico|de\s+tomada|ac\b|hdmi|usb|vga)",
+        r"\bfreezer\b", r"\brefrigerador\s+dom[eé]stico\b",
         r"\bliquidificador\s+industrial\b", r"\bfonte\s+alimenta[çc][ãa]o\b", r"\bpilha(s)?\b",
         r"\btelefone\s+celular\b", r"\baparelho\s+telef[ôo]nico\b", r"\bm[óo]dulo\s+eletr[ôo]nico\b",
         r"\bsensor\b", r"\bponto\s+de\s+acesso\b", r"\bprojetor\s+multim[íi]dia\b", r"\btomada\b",
@@ -289,7 +292,7 @@ CATEGORIAS = [
         r"\bmaterial\s+escolar\b", r"\bcarteira\s+escolar\b", r"\blivro\s+did[aá]tico\b",
         r"\blivro\b", r"\bbrinquedo(s)?\b", r"\bconjunto\s+escolar\b", r"\bjogo\s+educativo\b",
         r"\bmaterial\s+pedag[óo]gico\b",
-    ], None),
+    ], [r"\blivro\s+de\s+ata\b", r"\blivro\s+caixa\b", r"\blivro\s+protocolo\b"]),
 
     ("Material_Escritorio", [
         r"\bcaneta\s+esferogr[aá]fica\b", r"\bgrampeador\b", r"\bclips\b", r"\bpasta\s+arquivo\b",
@@ -303,7 +306,7 @@ CATEGORIAS = [
         r"\bpapel,?\s+a4\b", r"\betiqueta\s+(auto-?)?adesiva\b",
         r"\bcone\s+sinaliza[çc][ãa]o\b", r"\bcolete\s+identifica[çc][ãa]o\b", r"\bpulseira\s+identifica[çc][ãa]o\b",
         r"\bformul[aá]rio\b", r"\bsinalizador\b",
-    ], None),
+    ], [r"\bextrato\s+de\s+cola\b", r"\brefrigerante\b"]),
 
     ("Textil/Vestuario", [
         r"\bfardamento\b", r"\bcamiseta(s)?\b", r"\baviamento\b", r"\btecido\b",
@@ -359,7 +362,7 @@ CATEGORIAS = [
         r"\bc[âa]mera(s)?\s+(de\s+seguran[çc]a|de\s+vigil[âa]ncia|ip)\b",
         r"\balarme\b", r"\bcerca\s+el[eé]trica\b", r"\bdvr\b", r"\bnvr\b", r"\bextintor\b",
         r"\bc[âa]mera\s+v[íi]deo\s+de\s+seguran[çc]a\b", r"\bc[âa]mera\s+(de\s+)?rede\b", r"\bptz\b",
-        r"\blacre\b", r"\bportal\s+detector\s+(de\s+)?metal\b",
+        r"\blacre\s+de\s+seguran[çc]a\b", r"\bportal\s+detector\s+(de\s+)?metal\b",
     ], [r"\bc[âa]mera\s+(de\s+)?videoconfer[êe]ncia\b"]),
 
     ("Agro/Paisagismo", [
@@ -434,7 +437,7 @@ def classificar(desc_norm: str) -> str:
                 continue
             return nome
     stripped = desc_norm.strip()
-    if stripped in JUNK_TERMS or len(stripped) <= 4:
+    if stripped in JUNK_TERMS:
         return "Outros/Generico_Nao_Classificavel"
     return "Outros/Nao_Classificado"
 
@@ -449,14 +452,14 @@ def main():
 
     resultados = [(id_, classificar(desc)) for id_, desc in rows]
 
-    con.execute("DROP TABLE IF EXISTS categoria_regex_v15")
-    con.execute("CREATE TABLE categoria_regex_v15 (id_item INTEGER, categoria TEXT)")
-    con.executemany("INSERT INTO categoria_regex_v15 VALUES (?, ?)", resultados)
+    con.execute("DROP TABLE IF EXISTS categoria_regex_v16")
+    con.execute("CREATE TABLE categoria_regex_v16 (id_item INTEGER, categoria TEXT)")
+    con.executemany("INSERT INTO categoria_regex_v16 VALUES (?, ?)", resultados)
     print(f"classificado e gravado ({time.time()-t0:.1f}s)", flush=True)
 
     print(con.execute("""
-        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v15),1) pct
-        FROM categoria_regex_v15 GROUP BY categoria ORDER BY n DESC
+        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v16),1) pct
+        FROM categoria_regex_v16 GROUP BY categoria ORDER BY n DESC
     """).fetchdf().to_string())
     con.close()
 
