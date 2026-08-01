@@ -101,7 +101,8 @@ SERVICO_PATTERNS = [
     r"\bsustenta[çc][ãa]o\s+de\s+software\b", r"\bmensura[çc][ãa]o\s+de\s+software\b",
     r"\bcomodato\b", r"\bcess[ãa]o\s+n[ãa]o\s+oner",
     # rodada 14 (auditoria completa por categoria)
-    r"\bimplanta[çc][ãa]o\s+de\s+software\b",
+    r"\bimplanta[çc][ãa]o\s+de\s+software\b", r"\bimplementa[çc][ãa]o\s+(de\s+|[aá]gil\s+de\s+)?software\b",
+    r"\bescava[çc][ãa]o\s+mecanizada\b", r"\btransporte\s+de\s+alunos\b",
 ]
 
 # ---- Junk / generico demais pra classificar por texto sozinho ----
@@ -114,7 +115,9 @@ JUNK_TERMS = {
 BOILERPLATE_PATTERNS = [
     r"\bproposta\s+para\s+todos\s+os\s+itens\b", r"\bconforme\s+anexo\b",
     r"\bclassifica[çc][ãa]o\s+de\s+produto\s*\(\s*material\s*\)",  # sem \b final: ")" e nao-letra, \b nunca dispara ali (bug de classe nova)
-    r"\blote\s*\d+\b", r"^exemplo$", r"\blote\s+[ée]\s+composto\b",
+    r"^lote\s*\d+\s*$", r"^exemplo$", r"\blote\s+[ée]\s+composto\b",
+    # nota: "lote N" generico so' conta como boilerplate se for a string INTEIRA
+    # (sem produto depois) -- antes varria "LOTE 01 - banana/vestido/etc" tambem
     r"^constru[çc][ãa]o$", r"\bver\s+itens\s+e\s+quantidades\b",
     r"\bespecifica[çc][õo]es\s+e\s+quantitativos\b", r"^conforme\s+termo\s+de\s+refer[êe]ncia$",
 ]
@@ -128,7 +131,9 @@ CATEGORIAS = [
         r"\bgasolina\b", r"\betanol\b", r"\b[oó]leo\s+diesel\b", r"\bdiesel\b",
         r"\bgnv\b", r"\bquerosene\b", r"\bg[aá]s\s+liquefeito\b", r"\bglp\b",
         r"\bg[aá]s\s+(de\s+)?refino\b", r"\bbotij[ãa]o\b", r"\bcilindro\s+g[aá]s\b",
-    ], None),
+    ], [r"\bmotoriza[çc][ãa]o\b", r"\bcabine\s+dupla\b", r"\btorque\b", r"\bcilindrada\b",
+        r"\bveiculo\b", r"\bve[ií]culo\b", r"\bpick-?up\b", r"\bcombustivel\s+alcool\b",
+        r"\bocupantes\b", r"\brenavam\b", r"\bcobertura(s)?\s*:"]),
 
     ("Veiculos/Frota", [
         r"\bautom[oó]vel\b", r"\b[oô]nibus\b", r"\bcaminh[ãa]o\b", r"\bmicro[oô]nibus\b",
@@ -142,6 +147,7 @@ CATEGORIAS = [
     ("Veiculos/Pecas", [
         r"\bpe[çc]a(s)?\s+(automotiv|de\s+ve[ií]culo|de\s+moto|de\s+carro|de\s+caminh[ãa]o)",
         r"\bpneu\b", r"\bfiltro\s+de\s+[oó]leo\b", r"\bfiltro\s+de\s+combust[ií]vel\b",
+        # nota: exclui equipamento onde "pneu" e' so' componente mencionado, nao o produto
         r"\bbateria\s+automotiv", r"\b[oó]leo\s+lubrificante\b",
         r"\bpe[çc]a\s+mec[âa]nica\b", r"\bpe[çc]a\s+el[eé]trica\b", r"\bve[ií]culo\s+automotivo\b",
         r"\belemento\s+filtrante\b", r"\bfiltro\s+(de\s+)?(ar|[oó]leo|combust[íi]vel|lubrificante)\b",
@@ -149,7 +155,9 @@ CATEGORIAS = [
         r"\bpastilha\s+de\s+freio\b", r"\bgraxa\b",
         r"\bretentor\b", r"\bcorreia\s+transmiss[ãa]o\b", r"\belemento\s+do\s+filtro\b",
         r"\bpneum[aá]tico\b",
-    ], [r"\brolamento\s*/?\s*capa\s+asf[aá]ltica\b", r"\bcbuq\b"]),
+    ], [r"\brolamento\s*/?\s*capa\s+asf[aá]ltica\b", r"\bcbuq\b",
+        r"\bcarrinho\s+de\s+m[ãa]o\b", r"\bdistribuidor\s+(de\s+)?calc[aá]rio\b",
+        r"\bespalhador\s+de\s+esterco\b", r"\bro[çc]adeira\b", r"\bplantadeira\b"]),
 
     ("Saude/Farmaceutico", [
         r"\bmedicamento(s)?\b", r"\bcompr[ií]mido(s)?\b", r"\bc[aá]psula(s)?\b",
@@ -243,7 +251,7 @@ CATEGORIAS = [
         r"\bbomba\s+hidr[aá]ulica\b", r"\bpersiana\b",
         r"\blumin[aá]ria\b", r"\btorneira\b", r"\balicate\b", r"\bbarra\s+(chata|a[çc]o)\b",
         r"\bchave\s+matriz\b", r"\bp[óo]\s+de\s+pedra\b", r"\bfechadura\b", r"\barame\b",
-        r"\bestrutura\s+met[aá]lica\b", r"\brevestimento\s+piso\b", r"\banilha\b", r"\barruela\b",
+        r"\bestrutura\s+met[aá]lica\b", r"\brevestimento\s+piso\b", r"\banilha\s+(de\s+)?press[ãa]o\b", r"\barruela\b",
         r"\banel\s+veda[çc][ãa]o\b", r"\bjogo\s+chave\b", r"\bporta\b", r"\baguarr[aá]s\b",
         r"\bconector\s+el[eé]trico\b",
         r"\bemuls[ãa]o\s+asf[aá]ltica\b", r"\bv[aá]lvula\s+reten[çc][ãa]o\b", r"\bconjunto\s+drenagem\b",
@@ -312,7 +320,7 @@ CATEGORIAS = [
         r"\bfardamento\b", r"\bcamiseta(s)?\b", r"\baviamento\b", r"\btecido\b",
         r"\bhelanca\b", r"\bcal[çc]a\b", r"\bbermuda\b", r"\bsaia\s+shorts?\b",
         r"\bmochila\b", r"\bcolcha\b", r"\bjaqueta\b", r"\bcamisa\b",
-        r"\btoalha\s+(de\s+)?banho\b", r"\blen[çc]ol\b", r"\bjaleco\b",
+        r"\btoalha\s+(de\s+)?banho\b", r"\blen[çc]ol\b", r"\bjaleco\b", r"\bvestido\b",
     ], None),
 
     ("Alimentacao/Perecivel", [
@@ -361,9 +369,10 @@ CATEGORIAS = [
     ("Seguranca/Vigilancia_Eletronica", [
         r"\bc[âa]mera(s)?\s+(de\s+seguran[çc]a|de\s+vigil[âa]ncia|ip)\b",
         r"\balarme\b", r"\bcerca\s+el[eé]trica\b", r"\bdvr\b", r"\bnvr\b", r"\bextintor\b",
+        # nota: exclui pastilha de freio abaixo (feature "com alarme" de desgaste, nao alarme de seguranca)
         r"\bc[âa]mera\s+v[íi]deo\s+de\s+seguran[çc]a\b", r"\bc[âa]mera\s+(de\s+)?rede\b", r"\bptz\b",
         r"\blacre\s+de\s+seguran[çc]a\b", r"\bportal\s+detector\s+(de\s+)?metal\b",
-    ], [r"\bc[âa]mera\s+(de\s+)?videoconfer[êe]ncia\b"]),
+    ], [r"\bc[âa]mera\s+(de\s+)?videoconfer[êe]ncia\b", r"\bpastilha\b", r"\bfreio\b"]),
 
     ("Agro/Paisagismo", [
         r"\bsemente(s)?\b", r"\badubo\b", r"\bra[çc][ãa]o\s+animal\b", r"\bra[çc][ãa]o\s+(de\s+)?peixe\b",
@@ -376,7 +385,7 @@ CATEGORIAS = [
         r"\bimpresso(s)?\b", r"\bpapel\s+(para\s+)?impress[ãa]o\b", r"\badesivo\b", r"\bcartaz\b",
         r"\bpapel\s+fotogr[aá]fico\b", r"\bpapel\s+n[ãa]o\s+clorado\b", r"\bcart[õo]es\s+de\s+visita\b",
         r"\bfolheto\b", r"\bbanner\b", r"\bcrach[aá]s\b",
-    ], None),
+    ], [r"\bdentin[aá]rio\b", r"\bdental\b", r"\binstant[âa]neo\b", r"\bviscosidade\b"]),
 
     ("Equipamentos/Fitness", [
         r"\besteira\s+(de\s+)?gin[aá]stica\b", r"\bbicicleta\s+ergom[eé]trica\b", r"\bhalter(e)?(s)?\b",
@@ -452,14 +461,14 @@ def main():
 
     resultados = [(id_, classificar(desc)) for id_, desc in rows]
 
-    con.execute("DROP TABLE IF EXISTS categoria_regex_v16")
-    con.execute("CREATE TABLE categoria_regex_v16 (id_item INTEGER, categoria TEXT)")
-    con.executemany("INSERT INTO categoria_regex_v16 VALUES (?, ?)", resultados)
+    con.execute("DROP TABLE IF EXISTS categoria_regex_v17")
+    con.execute("CREATE TABLE categoria_regex_v17 (id_item INTEGER, categoria TEXT)")
+    con.executemany("INSERT INTO categoria_regex_v17 VALUES (?, ?)", resultados)
     print(f"classificado e gravado ({time.time()-t0:.1f}s)", flush=True)
 
     print(con.execute("""
-        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v16),1) pct
-        FROM categoria_regex_v16 GROUP BY categoria ORDER BY n DESC
+        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v17),1) pct
+        FROM categoria_regex_v17 GROUP BY categoria ORDER BY n DESC
     """).fetchdf().to_string())
     con.close()
 
