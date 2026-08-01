@@ -97,6 +97,9 @@ SERVICO_PATTERNS = [
     # rodada 12
     r"\blocutor\b", r"\bmestre\s+de\s+cerim[ôo]nia\b", r"\bauditoria\b", r"\bdeslocamento\b",
     r"\bcoffee\s+break\b",
+    # rodada 13 (correcao via outlier de preco)
+    r"\bsustenta[çc][ãa]o\s+de\s+software\b", r"\bmensura[çc][ãa]o\s+de\s+software\b",
+    r"\bcomodato\b", r"\bcess[ãa]o\s+n[ãa]o\s+oner",
 ]
 
 # ---- Junk / generico demais pra classificar por texto sozinho ----
@@ -139,10 +142,11 @@ CATEGORIAS = [
         r"\bbateria\s+automotiv", r"\b[oó]leo\s+lubrificante\b",
         r"\bpe[çc]a\s+mec[âa]nica\b", r"\bpe[çc]a\s+el[eé]trica\b", r"\bve[ií]culo\s+automotivo\b",
         r"\belemento\s+filtrante\b", r"\bfiltro\s+(de\s+)?(ar|[oó]leo|combust[íi]vel|lubrificante)\b",
-        r"\bamortecedor\b", r"\brolamento\b", r"\bpastilha\s+de\s+freio\b", r"\bgraxa\b",
+        r"\bamortecedor\b", r"\brolamento\s+(de\s+)?(esfera|roda|mancal|rolo)\b",
+        r"\bpastilha\s+de\s+freio\b", r"\bgraxa\b",
         r"\bretentor\b", r"\bcorreia\s+transmiss[ãa]o\b", r"\belemento\s+do\s+filtro\b",
         r"\bpneum[aá]tico\b",
-    ], None),
+    ], [r"\brolamento\s*/?\s*capa\s+asf[aá]ltica\b", r"\bcbuq\b"]),
 
     ("Saude/Farmaceutico", [
         r"\bmedicamento(s)?\b", r"\bcompr[ií]mido(s)?\b", r"\bc[aá]psula(s)?\b",
@@ -208,6 +212,7 @@ CATEGORIAS = [
         r"\bper[óo]xido\s+de\s+hidrog[êe]nio\b", r"\bindicador\s+biol[oó]gico\b",
         r"\btesoura\s+instrumental\b", r"\blanceta\b", r"\bequipamento\s+laborat[oó]rio\b",
         r"\btubo\s+supragl[óo]tico\b", r"\bterm[ôo]metro\b", r"\bbr[aá]quete\b",
+        r"\bconector\s+uso\s+m[eé]dico\b",
         r"\bescova\s+dental\b", r"\bescova\s+limpeza\b", r"\bpin[çc]a\s+p/?\s*videocirurgia\b",
         r"\breanimador\b", r"\bl[âa]mina\s+laborat[oó]rio\b", r"\bequipo\s+de\s+nutri[çc][ãa]o\s+enteral\b",
         r"\bcama\s+hospitalar\b", r"\balmotolia\b", r"\bsolu[çc][ãa]o\s+tamp[ãa]o\b", r"\bbandagem\b",
@@ -219,7 +224,7 @@ CATEGORIAS = [
         r"\bendopr[oó]tese\b", r"\bfio\s+guia\b", r"\bsistema\s+fixa[çc][ãa]o\s+coluna\b",
         r"\bortopedia\b", r"\bfio\s+ortop[eé]dico\b", r"\b[âa]ncora\s+de\s+sutura\b",
         r"\bestimula[çc][ãa]o\s+card[íi]aca\b",
-    ], None),
+    ], [r"\beletroduto\b"]),
 
     ("Construcao_Civil/Material", [
         r"\bcimento\b", r"\bareia\b", r"\bbrita\b", r"\btijolo(s)?\b", r"\btelha(s)?\b",
@@ -229,11 +234,12 @@ CATEGORIAS = [
         r"\babra[çc]adeira\b", r"\bparafuso(s)?\b", r"\btinta\b",
         r"\bl[âa]mpada\b", r"\bbroca\b", r"\bmadeira\b", r"\bchapa\s+(de\s+)?a[çc]o\b",
         r"\bdisjuntor\b", r"\bcadeado\b", r"\btubo\s+hidr[aá]ulico\b",
-        r"\bbomba\s+hidr[aá]ulica\b", r"\bconector\b", r"\bpersiana\b",
+        r"\bbomba\s+hidr[aá]ulica\b", r"\bpersiana\b",
         r"\blumin[aá]ria\b", r"\btorneira\b", r"\balicate\b", r"\bbarra\s+(chata|a[çc]o)\b",
         r"\bchave\s+matriz\b", r"\bp[óo]\s+de\s+pedra\b", r"\bfechadura\b", r"\barame\b",
         r"\bestrutura\s+met[aá]lica\b", r"\brevestimento\s+piso\b", r"\banilha\b", r"\barruela\b",
         r"\banel\s+veda[çc][ãa]o\b", r"\bjogo\s+chave\b", r"\bporta\b", r"\baguarr[aá]s\b",
+        r"\bconector\s+el[eé]trico\b",
         r"\bemuls[ãa]o\s+asf[aá]ltica\b", r"\bv[aá]lvula\s+reten[çc][ãa]o\b", r"\bconjunto\s+drenagem\b",
         r"\bsif[ãa]o\b", r"\bfiltro\s+linha\b", r"\bfiltro\s+purifica[çc][ãa]o\b",
         r"\bmedidor\s+vaz[ãa]o\b", r"\bcontator\b", r"\btubo\s+isolante\b",
@@ -311,7 +317,9 @@ CATEGORIAS = [
         r"\bab[óo]bora\b", r"\babacate\b", r"\bcarne\s+salgada\b", r"\bcarne\s+processada\b",
         r"\bcenoura\b", r"\bembutido\b", r"\babobrinha\b", r"\boleaginosa(s)?\b",
         r"\bqueijo\b", r"\bacelga\b", r"\bcarne\s+defumada\b",
-    ], [r"\bra[çc][ãa]o\s+(de\s+)?peixe\b"]),
+    ], [r"\bra[çc][ãa]o\s+(de\s+)?peixe\b",
+        r"\bpuxador\b", r"\btrinco\b", r"\bfechadura\b", r"\b[áa]udio\b",
+        r"\bel[áa]stico\s+embutido\b", r"\bmdp\b", r"\bprateleira\b"]),
 
     ("Alimentacao/Mercearia", [
         r"\barroz\b", r"\bfeij[ãa]o\b", r"\ba[çc][uú]car\b", r"\b[oó]leo\s+de\s+cozinha\b",
@@ -434,14 +442,14 @@ def main():
 
     resultados = [(id_, classificar(desc)) for id_, desc in rows]
 
-    con.execute("DROP TABLE IF EXISTS categoria_regex_v12")
-    con.execute("CREATE TABLE categoria_regex_v12 (id_item INTEGER, categoria TEXT)")
-    con.executemany("INSERT INTO categoria_regex_v12 VALUES (?, ?)", resultados)
+    con.execute("DROP TABLE IF EXISTS categoria_regex_v13")
+    con.execute("CREATE TABLE categoria_regex_v13 (id_item INTEGER, categoria TEXT)")
+    con.executemany("INSERT INTO categoria_regex_v13 VALUES (?, ?)", resultados)
     print(f"classificado e gravado ({time.time()-t0:.1f}s)", flush=True)
 
     print(con.execute("""
-        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v12),1) pct
-        FROM categoria_regex_v12 GROUP BY categoria ORDER BY n DESC
+        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v13),1) pct
+        FROM categoria_regex_v13 GROUP BY categoria ORDER BY n DESC
     """).fetchdf().to_string())
     con.close()
 
