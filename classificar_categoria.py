@@ -100,6 +100,8 @@ SERVICO_PATTERNS = [
     # rodada 13 (correcao via outlier de preco)
     r"\bsustenta[çc][ãa]o\s+de\s+software\b", r"\bmensura[çc][ãa]o\s+de\s+software\b",
     r"\bcomodato\b", r"\bcess[ãa]o\s+n[ãa]o\s+oner",
+    # rodada 14 (auditoria completa por categoria)
+    r"\bimplanta[çc][ãa]o\s+de\s+software\b",
 ]
 
 # ---- Junk / generico demais pra classificar por texto sozinho ----
@@ -134,6 +136,7 @@ CATEGORIAS = [
         r"\bcaminhonete\b", r"\bpick-?up\b", r"\bfurg[ãa]o\b", r"\b[ôo]nibus\s+escolar\b",
         r"\bve[ií]culo\s+van\b", r"\bretroescavadeira\b", r"\bmoto\s+\d+\s*cc\b",
         r"\bcamionete\b", r"\bve[ií]culo\s+passeio\b", r"\bambul[âa]ncia\b",
+        r"\bsedan\b", r"\bhatch\b",
     ], None),
 
     ("Veiculos/Pecas", [
@@ -165,6 +168,7 @@ CATEGORIAS = [
         r"\baripiprazol\b", r"\b[aá]cido\s+valpr[oó]ico\b", r"\banlodipino\b",
         r"\bfentanila\b", r"\b[aá]cidos\s+graxos\b", r"\bfenobarbital\b", r"\benoxaparina\b",
         r"\bamitriptilina\b", r"\bazitromicina\b", r"\badenosina\b", r"\bselexipague\b",
+        r"\bliraglutida\b", r"\bdulaglutida\b", r"\btirzepatida\b",
         r"\b[aá]cido\s+zoledr[ôo]nico\b", r"\bvacina(s)?\b", r"\bsuplemento\s+nutricional\b",
         r"\bacebrofilina\b", r"\bhaloperidol\b", r"\bcarvedilol\b", r"\batorvastatina\b",
         r"\batropina\b", r"\bbetametasona\b", r"\bsemaglutida\b", r"\bondansetrona\b",
@@ -195,7 +199,8 @@ CATEGORIAS = [
         r"\bpadr[ãa]o\s+de\s+refer[êe]ncia\b", r"\btubo\s+para\s+coleta\b", r"\bvestimenta\s+hospitalar\b",
         r"\blima\s+uso\s+odontol[oó]gico\b", r"\bgaze\b", r"\bbal[ãa]o\s+laborat[oó]rio\b",
         r"\bpin[çc]a\s+cir[uú]rgica\b", r"\besfigmoman[ôo]metro\b", r"\bindicador\s+qu[íi]mico\b",
-        r"\btrefina\b", r"\btrepano\b", r"\bafastador\s+cir[uú]rgico\b",
+        r"\btrefina\b", r"\btrepano\b", r"\bafastador\s+cir[uú]rgico\b", r"\bmotor\s+cir[uú]rgico\b",
+        r"\bcadeira\s+de\s+rodas\b",
         r"\btubo\s+endotraqueal\b", r"\bequipo\s+p/?\s*bomba\s+de\s+infus[ãa]o\b",
         r"\bsistema\s+p/?\s*estomia\b", r"\bl[âa]mina\s+bisturi\b", r"\bfilme\s+radiol[oó]gico\b",
         r"\bresina\s+composta\b", r"\bb[eé]quer\b", r"\bfrasco\s+laborat[oó]rio\b",
@@ -252,7 +257,7 @@ CATEGORIAS = [
         r"\bswitch\b", r"\broteador\b", r"\bcabo\s+de\s+rede\b",
         r"\bmicrocomputador\b", r"\bimpressora\b", r"\bsoftware\b", r"\btablet\b",
         r"\bunidade\s+(de\s+)?disco\b", r"\btransceiver\b",
-    ], None),
+    ], [r"^papel\b", r"\bpapel\s+a4\b"]),
 
     ("Eletronicos/Eletrodomesticos", [
         r"\btelevisor\b", r"\bfrigobar\b", r"\bmicrofone\b", r"\bbebedouro\b",
@@ -340,6 +345,8 @@ CATEGORIAS = [
 
     ("Mobiliario", [
         r"\bmesa\b", r"\bcadeira\b", r"\barm[aá]rio\b", r"\bestante\b",
+        # nota: "cadeira de rodas" e "motor cirurgico" (bateria recarregavel) sao
+        # intercept explicito em Saude/Hospitalar, checado antes desta categoria
         r"\bgarrafa\s+t[eé]rmica\b", r"\burna\s+mortu[aá]ria\b", r"\bgarraf[ãa]o\b", r"\bcolher\b",
         r"\bcaixa\s+t[eé]rmica\b", r"\bpoltrona\b", r"\bcarrinho\b", r"\bcortina\b",
         r"\bgarrafa\b", r"\bassadeira\b", r"\bpanela\b", r"\bprato\b", r"\bcolch[ãa]o\b",
@@ -442,14 +449,14 @@ def main():
 
     resultados = [(id_, classificar(desc)) for id_, desc in rows]
 
-    con.execute("DROP TABLE IF EXISTS categoria_regex_v13")
-    con.execute("CREATE TABLE categoria_regex_v13 (id_item INTEGER, categoria TEXT)")
-    con.executemany("INSERT INTO categoria_regex_v13 VALUES (?, ?)", resultados)
+    con.execute("DROP TABLE IF EXISTS categoria_regex_v15")
+    con.execute("CREATE TABLE categoria_regex_v15 (id_item INTEGER, categoria TEXT)")
+    con.executemany("INSERT INTO categoria_regex_v15 VALUES (?, ?)", resultados)
     print(f"classificado e gravado ({time.time()-t0:.1f}s)", flush=True)
 
     print(con.execute("""
-        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v13),1) pct
-        FROM categoria_regex_v13 GROUP BY categoria ORDER BY n DESC
+        SELECT categoria, count(*) n, round(100.0*count(*)/(SELECT count(*) FROM categoria_regex_v15),1) pct
+        FROM categoria_regex_v15 GROUP BY categoria ORDER BY n DESC
     """).fetchdf().to_string())
     con.close()
 
