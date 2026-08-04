@@ -39,15 +39,25 @@ HEADERS = {
 
 CONSULTA_BASE = "https://pncp.gov.br/api/consulta/v1"
 PNCP_BASE = "https://pncp.gov.br/api/pncp/v1/orgaos"
-DB_PATH = Path(__file__).parent / "market_scan_sem_oferta.duckdb"
-LOG_PATH = Path(__file__).parent / "extract_pncp_sem_oferta.log"
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_PATH, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
-)
+DB_PATH = None
+LOG_PATH = None
 log = logging.getLogger("extract_sem_oferta")
+
+
+def configurar_execucao(uf: str, sufixo_log: str = "") -> None:
+    """DB por UF (acumula todos os meses); log por UF+mes -- permite rodar varios
+    UFs em paralelo sem conflito de lock, e permite retry de gap isolado por mes
+    (sem misturar log de meses diferentes no mesmo grep)."""
+    global DB_PATH, LOG_PATH
+    DB_PATH = Path(__file__).parent / f"market_scan_sem_oferta_{uf}.duckdb"
+    sufixo = f"_{sufixo_log}" if sufixo_log else ""
+    LOG_PATH = Path(__file__).parent / f"extract_pncp_sem_oferta_{uf}{sufixo}.log"
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[logging.FileHandler(LOG_PATH, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
+        force=True,
+    )
 
 
 def chamar_api(url: str, params: dict | None = None):
@@ -67,9 +77,9 @@ def chamar_api(url: str, params: dict | None = None):
     raise RuntimeError(f"Falhou {MAX_TENTATIVAS}x em {url}")
 
 
-def buscar_contratacoes(uf: str, data_inicial: str, data_final: str) -> list[dict]:
+def buscar_contratacoes(uf: str, data_inicial: str, data_final: str, modalidades: list[int] | None = None) -> list[dict]:
     encontradas = []
-    for modalidade in MODALIDADES:
+    for modalidade in (modalidades or MODALIDADES):
         pagina = 1
         while True:
             params = {
@@ -130,7 +140,7 @@ def processar_contratacao(con, uf: str, contratacao: dict, modalidade: int) -> t
     n_gravados = 0
     for item in itens:
         situacao = item.get("situacaoCompraItemNome")
-        if situacao in ("Homologado", None):
+        if situacao in ("Homologado", None, "Em andamento"):
             continue
         tipo = "produto" if item.get("materialOuServico") == "M" else "servico"
         con.execute(
@@ -151,10 +161,10 @@ def processar_contratacao(con, uf: str, contratacao: dict, modalidade: int) -> t
     return len(itens), n_gravados
 
 
-def rodar(uf: str, data_inicial: str, data_final: str, limite: int | None) -> None:
+def rodar(uf: str, data_inicial: str, data_final: str, limite: int | None, modalidades: list[int] | None = None) -> None:
     con = conectar_db()
     inicio = time.time()
-    contratacoes = buscar_contratacoes(uf, data_inicial, data_final)
+    contratacoes = buscar_contratacoes(uf, data_inicial, data_final, modalidades)
     if limite:
         contratacoes = contratacoes[:limite]
 
@@ -186,5 +196,8 @@ if __name__ == "__main__":
     parser.add_argument("--limite", type=int, default=None)
     parser.add_argument("--data-inicial", type=str, required=True)
     parser.add_argument("--data-final", type=str, required=True)
+    parser.add_argument("--modalidades", type=str, default=None, help="ex: 1,6 -- retry so dessas")
     args = parser.parse_args()
-    rodar(args.uf.upper(), args.data_inicial, args.data_final, args.limite)
+    configurar_execucao(args.uf.upper(), sufixo_log=f"{args.data_inicial}_{args.data_final}")
+    mods = [int(m) for m in args.modalidades.split(",")] if args.modalidades else None
+    rodar(args.uf.upper(), args.data_inicial, args.data_final, args.limite, mods)

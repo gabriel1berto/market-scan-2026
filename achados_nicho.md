@@ -2128,3 +2128,42 @@ candidato novo superou os 8 já validados. Lista de prioridade permanece:
 ar condicionado, automóvel, insulina (medicamento), conjunto escolar, carne
 bovina in natura, microcomputador, switch, insulina (dispositivo médico) —
 mais peça automotiva como extensão natural do canal pneu já operante.
+
+## Base sem-oferta nacional (Deserto/Fracassado/Anulado, 26 estados, jun/2026) — 01-03/ago/2026
+
+Extração paralela por UF (`extract_pncp_sem_oferta.py`, 5 processos concorrentes,
+DB e log isolados por UF pra evitar lock do DuckDB), retry automático de gaps
+por modalidade, classificado pelo mesmo motor regex v19. 253.079 linhas totais,
+sinal real (exclui "Em andamento") = ~4.600-6.700 itens dependendo do corte de
+situação usado.
+
+**Confirmado real, sobrevive à descida a item**: TI/Hardware_e_Redes —
+Servidor (R$18,8mi/12 eventos/5 UFs), Notebook (R$10,4mi/10 eventos/**7 UFs**),
+Microcomputador (R$1,67mi/12 eventos/5 UFs), Unidade Disco (R$468k/7/2 UFs).
+4 itens de hardware distintos, cada um recorrendo de forma independente em
+múltiplos estados — sinal estrutural real, não outlier.
+
+**Trap descoberto (novo padrão, mesma classe de erro que Saúde/Hospitalar em
+RJ, mas na base sem-oferta)**: Textil/Vestuario (taxa de insucesso relativa
+21%, a mais alta do dataset) e EPI/Uniforme (16,4%) pareciam os melhores
+candidatos pela métrica agregada — mas ao descer a item, ambos são
+dominados por 1-2 contratos gigantes isolados (Jaqueta masculina R$14,8mi/
+1 evento/1 UF; Blusa uniforme R$9,77mi/1 evento/1 UF). Construção Civil
+teve o mesmo problema: R$69,2mi de categoria, mas ~R$31mi é só Emulsão
+Asfáltica (2 UFs); o resto do top12 é ruído de má classificação (estante de
+aço, barraca de acampamento caindo no bucket errado).
+
+**Métrica nova adotada pra evitar esse erro sistematicamente** (proposta por
+Fable 5, consulta 03/ago): HHI de valor por item dentro da categoria →
+`effective_n_itens = 1/HHI`. Categoria com `effective_n_itens < 3` OU
+`top1_item_share > 40%` é marcada `nao_decidir_sem_descer` automaticamente.
+Implementado em `build_item_metrics.py` (tabelas `item_metrics_sem_oferta`,
+`item_taxa_insucesso`, `categoria_metrics`, `checklist_estrutural` — score
+0-4 heurístico de padronização/natureza/modalidade/ticket, reaproveitando os
+4 critérios desta skill). Dashboard interativo publicado (funil de 4 níveis:
+categoria → item → checklist → nota de linha crua).
+
+**Housekeeping**: `market_scan_sem_oferta.duckdb` (piloto RJ sem sufixo) foi
+renomeado pra `market_scan_sem_oferta_RJ.duckdb`, e a tabela `itens_sem_oferta`
+de 57 linhas dentro de `market_scan_local.duckdb` (resíduo de teste
+pré-nacional) foi apagada — nenhuma das duas deve ser referenciada de novo.
